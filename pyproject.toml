@@ -1,0 +1,29 @@
+[project]
+name = "wmx"
+version = "0.1.0"
+description = "This project explores world model policy exploitations"
+readme = "README.md"
+authors = [
+    { name = "Arnav Verma", email = "arnavverma522@gmail.com" }
+]
+requires-python = ">=3.13.7"
+dependencies = [
+  "torch>=2.5",
+  "numpy>=1.26",
+  "gymnasium[mujoco]>=1.0",
+  "hydra-core>=1.3",
+  "omegaconf",
+  "wandb",
+  "pandas",
+  "pyarrow",
+  "scipy",
+  "matplotlib",
+  "tqdm",
+]
+
+[project.scripts]
+world-model-exploitation = "wmx:main"
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
