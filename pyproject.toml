@@ -25,5 +25,13 @@ dependencies = [
 world-model-exploitation = "wmx:main"
 
 [build-system]
-requires = ["uv_build>=0.13.6,<0.14.0"]
-build-backend = "uv_build"
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [{ include = "wmx", from = "src" }]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]

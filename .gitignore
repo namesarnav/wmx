@@ -18,3 +18,7 @@ wandb/
 __pycache__/
 *.pt
 .ipynb_checkpoints/
+
+CLAUDE.md
+CONTEXT.md
+AGENT.md
