@@ -1,0 +1,5 @@
+base: configs/frozenlake/base.yaml
+results_dir: results/runs
+n_seeds: 30
+grid:
+  N: [500, 900, 1600, 2900, 5300, 9500, 17000, 31000, 55000, 100000]  # log-spaced 500 -> 100K

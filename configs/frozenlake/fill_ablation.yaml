@@ -1,0 +1,6 @@
+base: configs/frozenlake/base.yaml
+results_dir: results/runs
+n_seeds: 30
+grid:
+  fill: [self, uniform, nearest, optimistic]
+  N: [500, 2000, 10000, 50000]

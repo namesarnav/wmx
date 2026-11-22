@@ -1,0 +1,17 @@
+task: frozenlake
+exp: base               # set by the sweep (sweep file stem)
+seed: 0                 # set by the sweep
+map_name: 8x8
+slippery: true
+N: 2000
+data_eps: 0.2           # CONTEXT.md Task 1: optimal policy + 20% random actions
+data_vi_gamma: 0.99     # only used to compute the optimal data policy
+fill: self
+pi0_eps: 1.0e-3         # TODO(Arnav): decide  (pi0 smoothing, CONTEXT.md §3.5)
+gamma: 1.0              # TODO(Arnav): decide  (discount, CONTEXT.md §3.5)
+H: 100                  # episode horizon; FrozenLake-v1 time limit is 100 (also for 8x8)
+lr: 1.0                 # VERIFY: tune on the first run (true return must peak then fall within `steps`)
+steps: 5000
+every: 25
+delta_quantiles: [0.5, 0.9, 0.95, 0.99]  # TODO(Arnav): decide which quantile is primary
+mc_episodes: 2000

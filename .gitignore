@@ -19,6 +19,9 @@ __pycache__/
 *.pt
 .ipynb_checkpoints/
 
+
+# Claude Files - Not needed
 CLAUDE.md
 CONTEXT.md
 AGENT.md
+PROMPT.md
