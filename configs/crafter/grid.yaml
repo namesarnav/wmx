@@ -1,0 +1,9 @@
+# Task 2b: 4 data budgets x 4 sizes x 3 horizons x 5 seeds = 240 runs. Only after the pilot passes.
+base: configs/crafter/base.yaml
+results_dir: results/runs
+n_seeds: 5
+grid:
+  N: [50000, 135000, 368000, 1000000]   # log-spaced 50K -> 1M
+  size: [xs, s, m, l]                   # VERIFY: logged M spans ~30x
+  H: [5, 15, 50]
+held_out: {N: [1000000], size: [l]}     # extrapolation targets (CONTEXT.md §3.4)

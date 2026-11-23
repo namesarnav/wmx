@@ -1,0 +1,41 @@
+task: crafter
+exp: base                 # set by the sweep
+seed: 0                   # set by the sweep
+held_out: false           # set by the sweep (grid.yaml)
+device: auto              # auto -> cuda, then mps, then cpu
+data_dir: data/crafter    # from scripts/convert_dreamer_replay.py
+model_cache_dir: results/models/crafter
+N: 100000
+size: s                   # test | xs | s | m | l  (models/rssm.py SIZES)
+# --- world model (DreamerV3 values) ---
+stoch: 32
+classes: 32
+latent_unimix: 0.01
+wm_steps: 50000           # VERIFY: enough to converge at N=1M, not absurd overfitting at N=50K (logged every 1000 steps)
+wm_lr: 1.0e-4
+batch: 16
+seq_len: 64
+kl_free: 1.0
+kl_dyn: 0.5
+kl_rep: 0.1
+grad_clip: 1000.0
+# --- pi0 ---
+pi0_eps: 0.01             # TODO(Arnav): decide  (pi0 smoothing; also pi's unimix so d = 0 at init; DreamerV3 uses 0.01)
+bc_steps: 10000
+bc_lr: 3.0e-4
+
+# --- actor-critic in imagination ---
+H: 15
+gamma: 0.997              # TODO(Arnav): decide  (DreamerV3: 1 - 1/333)
+lam: 0.95
+entropy: 3.0e-4           # TODO(Arnav): decide  (DreamerV3 value; larger keeps pi near uniform and limits d)
+actor_lr: 3.0e-5
+critic_lr: 3.0e-5
+slow_decay: 0.98
+critic_warmup: 1000
+ac_steps: 1000000          # VERIFY: far enough past the true-return peak (pilot decides)
+every: 2000
+eval_episodes: 16
+imag_starts: 64
+episode_length: 10000     # Crafter default; also caps imagined episodes
+delta_quantiles: [0.5, 0.9, 0.95, 0.99]  # TODO(Arnav): decide which is primary

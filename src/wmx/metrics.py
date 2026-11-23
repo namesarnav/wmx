@@ -64,3 +64,18 @@ def tabular_metrics(pi: torch.Tensor, pi0: torch.Tensor, m_hat: Model, m_true: M
                reward_error=(w[:, None] * pi * (m_hat.R - m_true.R).abs()).sum().item())
     row |= {f"delta_q{q}": v.item() for q, v in zip(qs, delta(pi, m_hat, m_true, v_imag, qs))}
     return row
+
+
+def categorical_kl(p: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+    """KL(p || q) = sum_k p_k (log p_k - log q_k) over the last dim. p, q: (..., K), q > 0. Returns (...,)."""
+    return (p * (p.clamp(min=1e-30).log() - q.log())).sum(-1)
+
+
+def d_from_kl(kl_sums: torch.Tensor) -> float:
+    """d = sqrt( E_traj [ sum_t KL(pi||pi0)(s_t) ] ) from per-trajectory KL sums (n,)."""
+    return kl_sums.mean().clamp(min=0).sqrt().item()
+
+
+def categorical_tv(p: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+    """Mean over latents of 0.5 ||p_i - q_i||_1. p, q: (..., S, K) -> (...,). Crafter delta proxy (DECISIONS.md)."""
+    return 0.5 * (p - q).abs().sum(-1).mean(-1)

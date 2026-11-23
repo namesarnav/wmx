@@ -4,6 +4,7 @@ from pathlib import Path
 
 import yaml
 
+from wmx.models.rssm import SIZES
 from wmx.models.tabular import FILL_RULES
 
 
@@ -43,13 +44,73 @@ class FrozenLakeConfig:
             raise ValueError(f"bad config: {failed}")
 
 
-CONFIGS = {"frozenlake": FrozenLakeConfig}
+@dataclass(frozen=True)
+class CrafterConfig:
+    task: str                     # "crafter"
+    exp: str
+    seed: int
+    held_out: bool                # set by the sweep: cell held out for extrapolation (largest N or size)
+    device: str                   # "auto" | "cpu" | "mps" | "cuda"
+    data_dir: str                 # converted offline dataset (scripts/convert_dreamer_replay.py)
+    model_cache_dir: str          # trained world models / pi0 shared across H (keyed by their config)
+    N: int                        # offline transitions
+    size: str                     # world-model size, key of models.rssm.SIZES
+    stoch: int                    # categorical latents
+    classes: int                  # classes per latent
+    latent_unimix: float          # uniform mix in latent distributions
+    wm_steps: int
+    wm_lr: float
+    batch: int                    # sequences per world-model / BC / AC batch
+    seq_len: int
+    kl_free: float                # free nats
+    kl_dyn: float
+    kl_rep: float
+    grad_clip: float
+    pi0_eps: float                # pi0 (and pi) uniform mix, keeps pi0 > 0 (open decision)
+    bc_steps: int
+    bc_lr: float
+    H: int                        # imagination horizon
+    gamma: float                  # open decision
+    lam: float
+    entropy: float                # actor entropy bonus (open decision: limits how far d can grow)
+    actor_lr: float
+    critic_lr: float
+    slow_decay: float
+    critic_warmup: int            # AC steps training only the critic before the actor moves
+    ac_steps: int                 # far past the usual stopping point
+    every: int                    # checkpoint interval (AC steps)
+    eval_episodes: int            # real episodes per checkpoint
+    imag_starts: int              # imagined episodes per checkpoint (from real first frames)
+    episode_length: int           # Crafter time limit; also the imagined-episode cap
+    delta_quantiles: list[float]
+
+    def __post_init__(self) -> None:
+        checks = {
+            "task must be 'crafter'": self.task == "crafter",
+            f"size must be in {list(SIZES)}": self.size in SIZES,
+            "device in auto/cpu/mps/cuda": self.device in ("auto", "cpu", "mps", "cuda"),
+            "0 < pi0_eps < 1 and 0 <= latent_unimix < 1": 0 < self.pi0_eps < 1 and 0 <= self.latent_unimix < 1,
+            "0 < gamma <= 1, 0 <= lam <= 1, 0 <= slow_decay < 1": 0 < self.gamma <= 1 and 0 <= self.lam <= 1
+            and 0 <= self.slow_decay < 1,
+            "0 <= critic_warmup <= ac_steps": 0 <= self.critic_warmup <= self.ac_steps,
+            "positive sizes/steps": min(self.N, self.stoch, self.classes, self.wm_steps, self.batch, self.seq_len,
+                                        self.bc_steps, self.H, self.ac_steps, self.every, self.eval_episodes,
+                                        self.imag_starts, self.episode_length) > 0,
+            "delta_quantiles in (0, 1]": len(self.delta_quantiles) > 0 and all(0 < q <= 1 for q in self.delta_quantiles),
+        }
+        failed = [k for k, ok in checks.items() if not ok]
+        if failed:
+            raise ValueError(f"bad config: {failed}")
 
 
-def make_config(d: dict) -> FrozenLakeConfig:
+Config = FrozenLakeConfig | CrafterConfig
+CONFIGS = {"frozenlake": FrozenLakeConfig, "crafter": CrafterConfig}
+
+
+def make_config(d: dict) -> Config:
     """Build the config dataclass for d['task']."""
     return CONFIGS[d["task"]](**d)
 
 
-def load_config(path: str | Path) -> FrozenLakeConfig:
+def load_config(path: str | Path) -> Config:
     return make_config(yaml.safe_load(Path(path).read_text()))

@@ -13,16 +13,23 @@ src/wmx/
   envs/frozenlake.py   make_env (+StepCounter), collect, goal_state, mc_return
   train/frozenlake.py  per-run pipeline (CONTEXT.md §4) incl. freeze + real-env checks
   train/__init__.py    RUNNERS registry (task -> run function)
+  models/rssm.py       DreamerV3-style world model (symlog, two-hot, KL balancing + free bits), SIZES
+  policies/actor_critic.py  Actor, Critic, lambda_return, imagine, ImaginationAC
+  data/replay.py       flat memory-mapped dataset, select_budget, SequenceSampler
+  envs/crafter.py      CrafterEnv (+ real step counter)
+  train/crafter.py     Crafter pipeline: WM/pi0 (cached), evaluate_imag, evaluate_real, run
 configs/frozenlake/    base, debug, n_sweep, fill_ablation, safe_horizon
-scripts/               run.py, sweep.py (resumable, local/SLURM), slurm/array.sbatch, plot_run.py
-tests/                 test_sanity.py (CONTEXT.md §7), test_tabular.py (unit + end-to-end)
+configs/crafter/       base, debug, pilot, grid (held-out cells flagged)
+scripts/               run.py, sweep.py (resumable, local/SLURM, held_out), slurm/array{,_gpu}.sbatch, plot_run.py,
+                       convert_dreamer_replay.py, pilot_gate.py
+tests/                 test_sanity.py (CONTEXT.md §7), test_tabular.py, test_crafter.py
 ```
 
 ## Checklist
 - [x] Phase 0 — core metrics + sanity tests (tabular)
 - [x] Phase 1 — FrozenLake: N sweep, fill-rule ablation, safe-horizon grid
 - [ ] Phase 1 — optional planning arm (not built)
-- [ ] Phase 2 — Crafter (online DreamerV3 run, pilot + gate, 240-run grid)
+- [x] Phase 2 — Crafter (online DreamerV3 run, pilot + gate, 240-run grid)
 - [ ] Phase 3 — MuJoCo (MLP ensemble / RSSM / TD-MPC2, CEM, MOPO, IQL, SAC ceiling)
 - [ ] Phase 4 — Sokoban (Qwen text WM, best-of-K, GRPO)
 - [ ] Phase 5 — mechanism ablations

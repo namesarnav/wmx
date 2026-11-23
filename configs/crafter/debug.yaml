@@ -1,0 +1,15 @@
+# Minutes-long smoke test on CPU/MPS: tiny model, short episodes. Needs data/crafter (any size >= 5000 steps).
+base: configs/crafter/base.yaml
+results_dir: results/runs
+n_seeds: 1
+grid:
+  N: [5000]
+  size: [test]
+  wm_steps: [200]
+  bc_steps: [100]
+  critic_warmup: [50]
+  ac_steps: [200]
+  every: [100]
+  eval_episodes: [2]
+  imag_starts: [4]
+  episode_length: [200]

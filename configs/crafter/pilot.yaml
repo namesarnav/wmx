@@ -1,0 +1,8 @@
+# Task 2a: small world model, 100K offline steps, H = 15, 2 seeds. Gate: python scripts/pilot_gate.py results/runs/pilot
+base: configs/crafter/base.yaml
+results_dir: results/runs
+n_seeds: 2
+grid:
+  N: [100000]
+  size: [s]
+  H: [15]
