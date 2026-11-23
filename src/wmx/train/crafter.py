@@ -1,6 +1,7 @@
 """Per-run pipeline (CONTEXT.md §4) for Crafter: offline data -> frozen RSSM + frozen BC pi0 -> actor-critic in
 imagination, far past the usual stopping point, with one row per checkpoint in metrics.csv."""
 import copy
+import fcntl
 import hashlib
 import os
 from dataclasses import asdict
@@ -29,11 +30,13 @@ def train_world_model(wm: WorldModel, sampler: SequenceSampler, cfg: CrafterConf
                       device: torch.device) -> None:
     opt = torch.optim.Adam(wm.parameters(), lr=cfg.wm_lr, eps=1e-8)
     for step in range(cfg.wm_steps):
+        
         loss, logs = wm.loss(sampler.sample(cfg.batch, rng, device), cfg.kl_free, cfg.kl_dyn, cfg.kl_rep)
         opt.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(wm.parameters(), cfg.grad_clip)
         opt.step()
+        
         if step % 1000 == 0:
             print(f"wm {step}", {k: round(v, 3) for k, v in logs.items()}, flush=True)
 
@@ -122,17 +125,21 @@ def load_or_train(cfg: CrafterConfig, sampler: SequenceSampler, rng: np.random.G
     pi0 = Actor(wm.feat_dim, wm.hidden, N_ACTIONS, cfg.pi0_eps).to(device)
     key = hashlib.sha1(repr([getattr(cfg, k) for k in WM_FIELDS]).encode()).hexdigest()[:10]
     path = Path(cfg.model_cache_dir) / f"N={cfg.N}_size={cfg.size}_seed={cfg.seed}_{key}.pt"
-    if path.exists():
-        state = torch.load(path, map_location=device)
-        wm.load_state_dict(state["wm"])
-        pi0.load_state_dict(state["pi0"])
-    else:
-        train_world_model(wm, sampler, cfg, rng, device)
-        behavior_cloning(wm, pi0, sampler, cfg, rng, device)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(f".tmp{os.getpid()}")
-        torch.save({"wm": wm.state_dict(), "pi0": pi0.state_dict()}, tmp)
-        os.replace(tmp, path)  # atomic: concurrent runs of the same cell never read a partial file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path.with_suffix(".lock"), "w") as lock:
+        # One run trains the cell; concurrent runs of the same cell wait here, then load it. The OS releases the
+        # lock if the process dies. Prefer `sweep.py --group 3` so the H runs of a cell never wait on each other.
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if path.exists():
+            state = torch.load(path, map_location=device)
+            wm.load_state_dict(state["wm"])
+            pi0.load_state_dict(state["pi0"])
+        else:
+            train_world_model(wm, sampler, cfg, rng, device)
+            behavior_cloning(wm, pi0, sampler, cfg, rng, device)
+            tmp = path.with_suffix(f".tmp{os.getpid()}")
+            torch.save({"wm": wm.state_dict(), "pi0": pi0.state_dict()}, tmp)
+            os.replace(tmp, path)  # atomic: a reader never sees a partial file
     return wm.requires_grad_(False).eval(), pi0.requires_grad_(False).eval()
 
 

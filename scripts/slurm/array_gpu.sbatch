@@ -8,4 +8,4 @@
 #SBATCH --mem=64G
 # VERIFY: add the NYU partition/account lines (e.g. #SBATCH --account=..., #SBATCH --partition=...).
 set -euo pipefail
-poetry run python scripts/sweep.py "$1" --index "$SLURM_ARRAY_TASK_ID"
+poetry run python scripts/sweep.py "$1" --index "$SLURM_ARRAY_TASK_ID" "${@:2}"  # extra args, e.g. --group 3

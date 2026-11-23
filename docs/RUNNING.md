@@ -30,6 +30,7 @@ the optimizer, π₀ or the evaluation is broken.
 
 ```bash
 # b. Sweeps (resumable: re-run the same command after interruption)
+# add --workers K to run K runs at once (e.g. --workers 8 on a Mac: ~5 h -> <1 h for the N sweep, estimate)
 poetry run python scripts/sweep.py configs/frozenlake/n_sweep.yaml          # 300 runs
 poetry run python scripts/sweep.py configs/frozenlake/fill_ablation.yaml    # 480 runs
 poetry run python scripts/sweep.py configs/frozenlake/safe_horizon.yaml     # 750 runs
@@ -80,10 +81,13 @@ or true return has not yet peaked. **Gate:** `pilot_gate.py` must print `PILOT P
 
 **d. Main grid** (240 runs; held-out cells N = 1M and size l have `held_out = True`):
 ```bash
-poetry run python scripts/sweep.py configs/crafter/grid.yaml --slurm --sbatch scripts/slurm/array_gpu.sbatch
+poetry run python scripts/sweep.py configs/crafter/grid.yaml --slurm --sbatch scripts/slurm/array_gpu.sbatch \
+    --group 3 --max-concurrent 20     # 80 tasks, one per (N, size, seed) cell running H = 5, 15, 50 in order
+# one multi-GPU node instead: --group 3 --workers 8   (GPUs assigned round-robin to the 8 workers)
 poetry run python scripts/sweep.py configs/crafter/grid.yaml --list
 ```
-World models/π₀ are cached in `results/models/crafter/` and shared by the H = 5/15/50 runs of a cell. Concurrent
-array tasks of one cell may each train it once. Size l at N = 1M is the slowest cell (~1–2 days).
+World models/π₀ are cached in `results/models/crafter/` and shared by the H = 5/15/50 runs of a cell; `--group 3`
+keeps a cell's runs in one task so the world model is trained once (a file lock guards against concurrent training).
+With `--group 3`, raise `#SBATCH --time` in `array_gpu.sbatch` to cover three runs. Size l at N = 1M is the slowest cell (~1–2 days).
 
 **Before moving on:** as with FrozenLake, d* and peak true return should increase with N (and with size).
