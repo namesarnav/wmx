@@ -9,7 +9,7 @@ from wmx.config import FrozenLakeConfig
 from wmx.envs.frozenlake import collect, goal_state, make_env, mc_return
 from wmx.metrics import optimal_return, tabular_metrics
 from wmx.models.tabular import count_model, true_model
-from wmx.policies.tabular import behavior_cloning, exact_pg
+from wmx.policies.tabular import behavior_cloning, best_of_k, exact_pg
 from wmx.utils import checksum, git_hash, seed_everything
 
 
@@ -40,10 +40,14 @@ def run(cfg: FrozenLakeConfig, run_dir: Path) -> pd.DataFrame:
     # optimize in the frozen model, one row per checkpoint
     ceiling = optimal_return(m_true, cfg.H, cfg.gamma)
     rows = []
-    for step, pi in exact_pg(pi0, m_hat, cfg.H, cfg.gamma, cfg.lr, cfg.steps, cfg.every):
+    if cfg.optimizer == "pg":
+        policies = exact_pg(pi0, m_hat, cfg.H, cfg.gamma, cfg.lr, cfg.steps, cfg.every)
+    else:  # step = K
+        policies = ((K, best_of_k(pi0, m_hat, cfg.H, cfg.gamma, K)) for K in (2**i for i in range(cfg.steps.bit_length())))
+    for step, pi in policies:
         rows.append(dict(seed=cfg.seed, N=cfg.N, M=None, H=cfg.H, step=step,
                          **tabular_metrics(pi, pi0, m_hat, m_true, cfg.H, cfg.gamma, cfg.delta_quantiles),
-                         ensemble_disagreement=None, fill=cfg.fill, gamma=cfg.gamma, ceiling_return=ceiling))
+                         ensemble_disagreement=None, fill=cfg.fill, gamma=cfg.gamma, optimizer=cfg.optimizer, ceiling_return=ceiling))
     if checksum(*m_hat, pi0) != frozen:
         raise RuntimeError("frozen model or pi0 changed during policy optimization")
 

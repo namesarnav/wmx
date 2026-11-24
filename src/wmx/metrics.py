@@ -1,4 +1,6 @@
 """Shared metrics (CONTEXT.md §3): exact tabular evaluation, d, delta. Every task imports these."""
+import math
+
 import torch
 
 from wmx.models.tabular import Model
@@ -79,3 +81,9 @@ def d_from_kl(kl_sums: torch.Tensor) -> float:
 def categorical_tv(p: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
     """Mean over latents of 0.5 ||p_i - q_i||_1. p, q: (..., S, K) -> (...,). Crafter delta proxy (DECISIONS.md)."""
     return 0.5 * (p - q).abs().sum(-1).mean(-1)
+
+
+def best_of_k_kl(K: int) -> float:
+    """KL(best-of-K || base) = log K - (K - 1)/K for a continuous selection score (Gao et al. 2023); an upper bound
+    when scores can tie."""
+    return math.log(K) - (K - 1) / K

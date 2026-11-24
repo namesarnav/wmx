@@ -58,7 +58,7 @@ def test_weighted_quantile():
 def test_pipeline_end_to_end(tmp_path):
     cfg = make_config(dict(task="frozenlake", exp="test", seed=0, map_name="8x8", slippery=True, N=500,
                            data_eps=0.2, data_vi_gamma=0.99, fill="self", pi0_eps=1e-3, gamma=1.0, H=100,
-                           lr=1.0, steps=20, every=10, delta_quantiles=[0.95], mc_episodes=300))
+                           optimizer="pg", lr=1.0, steps=20, every=10, delta_quantiles=[0.95], mc_episodes=300))
     df = run(cfg, tmp_path)
     assert list(df.step) == [0, 10, 20] and df.d_imag[0] < 1e-6  # softmax(log pi0) = pi0 up to float error
     assert (tmp_path / "done").exists() and (tmp_path / "git.txt").exists()
@@ -68,3 +68,15 @@ def test_pipeline_end_to_end(tmp_path):
 def test_config_rejects_missing_field():
     with pytest.raises(TypeError):
         make_config(dict(task="frozenlake"))
+
+
+def test_best_of_k_policy_and_kl_bound():
+    from wmx.metrics import best_of_k_kl, categorical_kl
+    from wmx.policies.tabular import best_of_k
+    m, _ = two_state(0.5)
+    pi0 = torch.tensor([[0.7, 0.3], [0.5, 0.5]], dtype=DT)
+    assert torch.equal(best_of_k(pi0, m, H=3, gamma=1.0, K=1), pi0)
+    pi = best_of_k(pi0, m, H=1, gamma=1.0, K=2)   # H=1: Q = R, a1 better in state 0: P(a1) = 1 - 0.7^2
+    assert pi[0].tolist() == pytest.approx([0.49, 0.51])
+    assert categorical_kl(pi[0], pi0[0]).item() <= best_of_k_kl(2) + 1e-12
+    assert best_of_k_kl(1) == 0 and best_of_k_kl(4) == pytest.approx(np.log(4) - 0.75)

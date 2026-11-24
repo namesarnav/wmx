@@ -1,0 +1,8 @@
+# Planning arm (Q1): per-state best-of-K under the model's Q, K = 1, 2, 4, ..., 2^20. Tests the d(a - b d) form.
+base: configs/frozenlake/base.yaml
+results_dir: results/runs
+n_seeds: 30
+grid:
+  optimizer: [bok]
+  steps: [1048576]
+  N: [500, 2000, 10000, 50000]

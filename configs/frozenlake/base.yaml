@@ -10,6 +10,7 @@ fill: self
 pi0_eps: 1.0e-3         # TODO(Arnav): decide  (pi0 smoothing, CONTEXT.md §3.5)
 gamma: 1.0              # TODO(Arnav): decide  (discount, CONTEXT.md §3.5)
 H: 100                  # episode horizon; FrozenLake-v1 time limit is 100 (also for 8x8)
+optimizer: pg           # pg | bok (planning arm)
 lr: 1.0                 # VERIFY: tune on the first run (true return must peak then fall within `steps`)
 steps: 5000
 every: 25

@@ -22,8 +22,9 @@ class FrozenLakeConfig:
     pi0_eps: float                # pi0 smoothing (open decision, CONTEXT.md §3.5)
     gamma: float                  # discount of the optimized/evaluated return (open decision)
     H: int                        # episode horizon; <= env time limit
-    lr: float                     # SGD step size of exact PG
-    steps: int                    # PG steps (run far past the true-return peak)
+    optimizer: str                # "pg" (exact policy gradient) | "bok" (best-of-K planning arm)
+    lr: float                     # SGD step size of exact PG (unused by bok)
+    steps: int                    # PG steps (run far past the true-return peak); bok: max K, rows at K = 1, 2, 4, ...
     every: int                    # checkpoint interval
     delta_quantiles: list[float]  # logged quantiles of delta (open decision: which is primary)
     mc_episodes: int              # real rollouts for the end-of-run evaluation check
@@ -32,6 +33,7 @@ class FrozenLakeConfig:
         checks = {
             "task must be 'frozenlake'": self.task == "frozenlake",
             f"fill must be in {FILL_RULES}": self.fill in FILL_RULES,
+            "optimizer in pg/bok": self.optimizer in ("pg", "bok"),
             "0 < pi0_eps <= 1": 0 < self.pi0_eps <= 1,
             "0 <= data_eps <= 1": 0 <= self.data_eps <= 1,
             "0 < gamma <= 1 and 0 < data_vi_gamma < 1": 0 < self.gamma <= 1 and 0 < self.data_vi_gamma < 1,
