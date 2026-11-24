@@ -37,8 +37,17 @@ def checksum(*tensors: torch.Tensor) -> str:
 
 
 def git_hash() -> str:
-    """Current commit hash, suffixed with '-dirty' if the tree has uncommitted changes. Raises outside git."""
-    import subprocess
+    """Current commit hash, suffixed with '-dirty' if the tree has uncommitted changes. Raises outside git.
+    Without a git binary (e.g. inside the Apptainer container) it reads .git directly and suffixes '-unchecked'."""
+    import shutil, subprocess
+    if shutil.which("git") is None:
+        g = Path(__file__).resolve().parents[2] / ".git"
+        head = (g / "HEAD").read_text().strip()
+        if head.startswith("ref: "):
+            ref, loose = head[5:], g / head[5:]
+            head = loose.read_text().strip() if loose.exists() else next(
+                l.split()[0] for l in (g / "packed-refs").read_text().splitlines() if l.endswith(" " + ref))
+        return head + "-unchecked"
     run = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout.strip()
     return run("rev-parse", "HEAD") + ("-dirty" if run("status", "--porcelain") else "")
 

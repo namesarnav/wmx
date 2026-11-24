@@ -41,7 +41,7 @@ def test_outcome_text_roundtrip():
 
 def test_grpo_advantages_and_update():
     adv = grpo_advantages(torch.tensor([[1.0, 3.0], [2.0, 2.0]]))
-    assert adv.tolist() == pytest.approx([[-1.0, 1.0], [0.0, 0.0]])
+    assert torch.allclose(adv, torch.tensor([[-1.0, 1.0], [0.0, 0.0]]))
     pi0 = DiscreteActor(4, 8, 2, 0.01).requires_grad_(False)
     pi = DiscreteActor(4, 8, 2, 0.01)
     pi.load_state_dict(pi0.state_dict())
