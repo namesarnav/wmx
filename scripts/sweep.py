@@ -12,8 +12,10 @@ Parallelism:
 A sweep file has: base (config path), results_dir, n_seeds, grid ({field: [values]}), and optionally
   set ({field: value}): overrides applied to every run (e.g. a Task 5 variant),
   held_out ({field: [values]}): a run is held out (config field held_out) if any of its grid values is listed.
-A grid key "f1,f2" zips fields: its values are lists [v1, v2] (e.g. env_id,data_dir); the run name uses f1 only.
-Runs are results_dir/<sweep stem>/<field=value_..._seed=k>; a run with a `done` file is skipped.
+A grid key "f1,f2" zips fields: its values are lists [v1, v2] (e.g. env_id,data_dir); the run name uses the scalar
+fields of the zip. Duplicate run names are an error.
+Runs are results_dir/<config dir>/<sweep stem>/<field=value_..._seed=k> (e.g. results/runs/crafter/pilot/...);
+a run with a `done` file is skipped.
 """
 import argparse
 import itertools
@@ -37,7 +39,7 @@ def expand(sweep_path: Path) -> list[tuple[Path, dict]]:
     if not {"base", "results_dir", "n_seeds", "grid"} <= set(sw) <= {"base", "results_dir", "n_seeds", "grid", "set",
                                                                      "held_out"}:
         raise ValueError(f"sweep keys must be base, results_dir, n_seeds, grid[, set, held_out]; got {sorted(sw)}")
-    base, exp = yaml.safe_load(Path(sw["base"]).read_text()), sweep_path.stem
+    base, exp = yaml.safe_load(Path(sw["base"]).read_text()), f"{sweep_path.parent.name}/{sweep_path.stem}"
     runs = []
     for seed in range(sw["n_seeds"]):
         for values in itertools.product(*sw["grid"].values()):
@@ -45,12 +47,15 @@ def expand(sweep_path: Path) -> list[tuple[Path, dict]]:
             for k, v in zip(sw["grid"], values):
                 fields = k.split(",")
                 point |= dict(zip(fields, v)) if len(fields) > 1 else {k: v}
-                name.append(f"{fields[0]}={v[0] if len(fields) > 1 else v}".replace("/", "-"))
+                pairs = zip(fields, v) if len(fields) > 1 else [(k, v)]
+                name += [f"{f}={x}".replace("/", "-") for f, x in pairs if not isinstance(x, (dict, list))]
             if "held_out" in sw:
                 point["held_out"] = any(point.get(k) in v for k, v in sw["held_out"].items())
             name = "_".join(name) + f"_seed={seed}"
             runs.append((Path(sw["results_dir"]) / exp / name,
                          {**base, **sw.get("set", {}), **point, "exp": exp, "seed": seed}))
+    if len({d for d, _ in runs}) < len(runs):
+        raise ValueError(f"{sweep_path}: two grid points map to the same run name")
     return runs
 
 

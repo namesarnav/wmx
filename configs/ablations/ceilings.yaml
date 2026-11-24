@@ -1,0 +1,11 @@
+# Task 5 true-simulator ceilings (SAC) for every continuous variant; also gives the behavior policies
+# (the unmodified Hopper policy comes from configs/baselines/sac_mujoco.yaml).
+base: configs/baselines/sac.yaml
+results_dir: results/baselines
+n_seeds: 3
+grid:
+  env_id,env_kwargs,episode_length,sticky,friction: [
+    [Hopper-v5, {}, 1000, 0.1, null], [Hopper-v5, {}, 1000, 0.25, null], [Hopper-v5, {}, 1000, 0.5, null],
+    [Hopper-v5, {terminate_when_unhealthy: false}, 1000, 0.0, null],
+    [gym_pusht/PushT-v0, {obs_type: state}, 300, 0.0, null], [gym_pusht/PushT-v0, {obs_type: state}, 300, 0.0, 0.2],
+    [gym_pusht/PushT-v0, {obs_type: state}, 300, 0.0, 1.0], [gym_pusht/PushT-v0, {obs_type: state}, 300, 0.0, 3.0]]

@@ -1,0 +1,9 @@
+# Task 5, contact discontinuities: Push-T (state observations) with varied friction; null = env default.
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 5
+set: {env_id: gym_pusht/PushT-v0, env_kwargs: {obs_type: state}, episode_length: 300, arch: ensemble, optimizer: ac,
+      N: 200000, params: 200000}   # VERIFY: gym-pusht env id and obs_type kwarg
+grid:
+  friction,data_dir: [[null, data/pusht-default], [0.2, data/pusht-0.2], [1.0, data/pusht-1.0],
+                      [3.0, data/pusht-3.0]]       # TODO(Arnav): decide the friction levels

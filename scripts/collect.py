@@ -1,19 +1,22 @@
 """Collect an offline dataset in a config's real env (incl. Task 5 variants) with a saved SAC/PPO policy, taking a
 uniformly random action with probability EPS. Whole episodes until at least N steps.
-Usage: python scripts/collect.py CONFIG.yaml POLICY.pt OUT_DIR N EPS SEED
+Usage: python scripts/collect.py CONFIG.yaml POLICY.pt OUT_DIR N EPS SEED [field=value ...]
+  field=value overrides config fields (YAML values), e.g. sticky=0.25 'env_kwargs={terminate_when_unhealthy: false}'
 """
 import sys
 from pathlib import Path
 
 import numpy as np
 import torch
+import yaml
 
-from wmx.config import load_config
+from wmx.config import make_config
 from wmx.data.replay import write_dataset
 from wmx.envs.vector import make_env
 from wmx.policies.baselines import load_actor
 
-cfg, actor = load_config(sys.argv[1]), load_actor(sys.argv[2])
+overrides = {k: yaml.safe_load(v) for k, v in (a.split("=", 1) for a in sys.argv[7:])}
+cfg, actor = make_config({**yaml.safe_load(Path(sys.argv[1]).read_text()), **overrides}), load_actor(sys.argv[2])
 out, N, eps, seed = Path(sys.argv[3]), int(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6])
 env, rng = make_env(cfg, seed), np.random.default_rng(seed)
 noop = 0 if env.discrete else np.zeros(env.act_dim, np.float32)

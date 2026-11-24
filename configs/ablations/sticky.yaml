@@ -1,0 +1,9 @@
+# Task 5, action stochasticity: Hopper with sticky actions (prob. sticky of repeating the previous action).
+# Data: scripts/collect.py with the unmodified-Hopper SAC policy in each variant (docs/RUNNING.md §7).
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 5
+set: {env_id: Hopper-v5, arch: ensemble, optimizer: ac, N: 200000, params: 200000}
+grid:
+  sticky,data_dir: [[0.0, data/hopper-sticky-0.0], [0.1, data/hopper-sticky-0.1], [0.25, data/hopper-sticky-0.25],
+                    [0.5, data/hopper-sticky-0.5]]   # TODO(Arnav): decide the sticky levels

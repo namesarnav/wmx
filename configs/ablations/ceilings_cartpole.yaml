@@ -1,0 +1,6 @@
+# Task 5 ceilings for CartPole (PPO); the dense-reward policy is the behavior policy for both datasets.
+base: configs/baselines/ppo.yaml
+results_dir: results/baselines
+n_seeds: 3
+grid:
+  sparse_reward: [false, true]

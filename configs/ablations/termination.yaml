@@ -1,0 +1,8 @@
+# Task 5, terminal hazards: Hopper with and without termination when unhealthy.
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 5
+set: {env_id: Hopper-v5, arch: ensemble, optimizer: ac, N: 200000, params: 200000}
+grid:
+  data_dir,env_kwargs: [[data/hopper-term, {terminate_when_unhealthy: true}],
+                        [data/hopper-noterm, {terminate_when_unhealthy: false}]]

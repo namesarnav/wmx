@@ -1,0 +1,9 @@
+# Task 5, reward sparsity: CartPole with the dense reward vs reward 1 only for surviving to the time limit.
+# Same dynamics and behavior data; only the reward differs.
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 5
+set: {env_id: CartPole-v1, episode_length: 500, arch: ensemble, optimizer: ac, N: 100000, params: 100000,
+      pi0_eps: 0.01}      # discrete actions: pi0_eps is the uniform mix
+grid:
+  sparse_reward,data_dir: [[false, data/cartpole-dense], [true, data/cartpole-sparse]]
