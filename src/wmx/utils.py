@@ -37,3 +37,18 @@ def git_hash() -> str:
     import subprocess
     run = lambda *a: subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout.strip()
     return run("rev-parse", "HEAD") + ("-dirty" if run("status", "--porcelain") else "")
+
+
+def start_run(cfg, run_dir) -> None:
+    """Create run_dir with config.yaml and git.txt, then seed everything from cfg.seed (CONTEXT.md §6)."""
+    from dataclasses import asdict
+    import yaml
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "config.yaml").write_text(yaml.safe_dump(asdict(cfg)))
+    (run_dir / "git.txt").write_text(git_hash() + "\n")
+    seed_everything(cfg.seed)
+
+
+def n_params(model: torch.nn.Module) -> int:
+    """Logged model size M: parameters excluding measurement-only parts (TD-MPC2 Q-target copy and obs probe)."""
+    return sum(p.numel() for n, p in model.named_parameters() if not n.startswith(("q_targ.", "probe.")))

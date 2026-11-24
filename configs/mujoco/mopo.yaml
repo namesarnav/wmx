@@ -1,0 +1,9 @@
+# Task 3: MOPO penalty sweep r - lambda u(s, a); do alpha and beta change, or only d*?
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 3
+set: {arch: ensemble, optimizer: ac, N: 100000, params: 200000}
+grid:
+  env_id,data_dir: [[HalfCheetah-v5, data/halfcheetah-medium], [Hopper-v5, data/hopper-medium],
+                    [Walker2d-v5, data/walker2d-medium]]
+  mopo_lambda: [0.0, 0.1, 0.3, 1.0, 3.0]   # TODO(Arnav): decide the lambda range

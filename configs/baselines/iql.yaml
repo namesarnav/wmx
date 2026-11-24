@@ -1,0 +1,24 @@
+task: iql
+exp: iql
+seed: 0
+device: auto
+env_id: HalfCheetah-v5
+env_kwargs: {}
+episode_length: 1000
+sticky: 0.0
+sparse_reward: false
+friction: null
+data_dir: data/halfcheetah-medium
+N: 100000
+steps: 1000000
+batch: 256
+lr: 3.0e-4
+hidden: 256
+depth: 32                 # CNN depth, image obs only (Crafter)
+gamma: 0.99
+tau: 0.005
+expectile: 0.7            # IQL paper, MuJoCo
+beta: 3.0                 # IQL paper, MuJoCo
+pi_eps: 0.05
+eval_every: 50000
+eval_episodes: 10

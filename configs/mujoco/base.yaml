@@ -1,0 +1,61 @@
+task: vector
+exp: base                 # set by the sweep
+seed: 0                   # set by the sweep
+held_out: false
+device: auto
+# --- real env (envs/vector.py) ---
+env_id: HalfCheetah-v5    # VERIFY: the Minari mujoco/*-v0 datasets were collected in the v5 envs
+env_kwargs: {}
+episode_length: 1000
+sticky: 0.0
+sparse_reward: false
+friction: null
+# --- data ---
+data_dir: data/halfcheetah-medium   # scripts/convert_minari.py mujoco/halfcheetah/medium-v0 data/halfcheetah-medium
+model_cache_dir: results/models/vector
+N: 100000
+holdout: 50000            # transitions from other episodes for the held-out one-step error
+# --- world model ---
+arch: ensemble            # ensemble | rssm | tdmpc2
+params: 200000            # width is matched to this parameter count (equal-params comparison)
+layers: 4                 # ensemble
+members: 7                # ensemble
+stoch: 32                 # rssm
+classes: 16               # rssm
+latent_unimix: 0.01       # rssm
+kl_free: 1.0              # rssm
+kl_dyn: 0.5               # rssm
+kl_rep: 0.1               # rssm
+latent: 128               # tdmpc2
+num_q: 5                  # tdmpc2
+wm_steps: 100000          # VERIFY: converged on the held-out error at N = 900K
+wm_lr: 3.0e-4
+batch: 64
+seq_len: 16
+grad_clip: 100.0
+# --- pi0 ---
+pi0_eps: 0.05             # TODO(Arnav): decide  (pi0 min std in pre-tanh units; keeps KL finite)
+max_std: 1.0
+bc_steps: 20000
+bc_lr: 3.0e-4
+# --- optimizer ---
+optimizer: ac             # ac | plan
+mopo_lambda: 0.0
+ac_hidden: 256
+H: 15
+gamma: 0.99               # TODO(Arnav): decide
+lam: 0.95
+entropy: 3.0e-4           # TODO(Arnav): decide
+actor_lr: 3.0e-5
+critic_lr: 3.0e-5
+slow_decay: 0.98
+critic_warmup: 1000
+ac_steps: 300000          # VERIFY: far enough past the true-return peak
+every: 5000
+plan_iters: [0, 1, 2, 4, 8, 16]
+plan_pop: 256
+plan_elites: 32
+plan_temperature: 0.0     # 0 = CEM, > 0 = MPPI
+eval_episodes: 10
+imag_starts: 64
+delta_quantiles: [0.5, 0.9, 0.95, 0.99]  # TODO(Arnav): decide which is primary

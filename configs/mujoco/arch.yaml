@@ -1,0 +1,11 @@
+# Task 3: 3 envs x 3 architectures x 2 data budgets x 2 sizes, imagination AC. Gives both matched comparisons:
+# equal parameter count (by construction, `params`) and equal held-out one-step error (matched in analysis).
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 3
+grid:
+  env_id,data_dir: [[HalfCheetah-v5, data/halfcheetah-medium], [Hopper-v5, data/hopper-medium],
+                    [Walker2d-v5, data/walker2d-medium]]
+  arch: [ensemble, rssm, tdmpc2]
+  N: [100000, 900000]
+  params: [200000, 2000000]

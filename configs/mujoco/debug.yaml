@@ -1,0 +1,10 @@
+# Minutes-long smoke test on CPU: every arch, AC and CEM, tiny settings. Needs data/halfcheetah-medium.
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 1
+set: {N: 5000, holdout: 2000, params: 20000, wm_steps: 100, bc_steps: 50, critic_warmup: 10, ac_steps: 40, every: 20,
+      eval_episodes: 2, imag_starts: 4, episode_length: 50, plan_iters: [0, 1], plan_pop: 16, plan_elites: 4,
+      model_cache_dir: results/models/debug}
+grid:
+  arch: [ensemble, rssm, tdmpc2]
+  optimizer: [ac, plan]

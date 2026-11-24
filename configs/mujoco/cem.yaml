@@ -1,0 +1,11 @@
+# Task 3, Q1: ensemble only, CEM planning (rows = planner iterations 0..16). The RL arm is arch.yaml's ensemble runs
+# (same cached world models, same seeds).
+base: configs/mujoco/base.yaml
+results_dir: results/runs
+n_seeds: 3
+set: {arch: ensemble, optimizer: plan}
+grid:
+  env_id,data_dir: [[HalfCheetah-v5, data/halfcheetah-medium], [Hopper-v5, data/hopper-medium],
+                    [Walker2d-v5, data/walker2d-medium]]
+  N: [100000, 900000]
+  params: [200000, 2000000]

@@ -28,9 +28,9 @@ tests/                 test_sanity.py (CONTEXT.md §7), test_tabular.py, test_cr
 ## Checklist
 - [x] Phase 0 — core metrics + sanity tests (tabular)
 - [x] Phase 1 — FrozenLake: N sweep, fill-rule ablation, safe-horizon grid
-- [ ] Phase 1 — optional planning arm (not built)
+- [x] Phase 1 — planning arm (per-state best-of-K, `optimizer: bok`)
 - [x] Phase 2 — Crafter (online DreamerV3 run, pilot + gate, 240-run grid)
-- [ ] Phase 3 — MuJoCo (MLP ensemble / RSSM / TD-MPC2, CEM, MOPO, IQL, SAC ceiling)
+- [x] Phase 3 — MuJoCo (MLP ensemble / RSSM / TD-MPC2, CEM/MPPI, MOPO, IQL, SAC/PPO ceilings)
 - [ ] Phase 4 — Sokoban (Qwen text WM, best-of-K, GRPO)
 - [ ] Phase 5 — mechanism ablations
 - [ ] Phase 6 — analysis (fits, d* CIs, scaling, extrapolation, safe-horizon, figures)

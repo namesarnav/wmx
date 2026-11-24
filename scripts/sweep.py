@@ -10,7 +10,9 @@ Parallelism:
                       task per (N, size, seed) cell running H = 5, 15, 50: the world model is trained once and reused.
   --max-concurrent J  at most J SLURM array tasks running at once
 A sweep file has: base (config path), results_dir, n_seeds, grid ({field: [values]}), and optionally
-held_out ({field: [values]}): a run is held out (config field held_out) if any of its grid values is listed.
+  set ({field: value}): overrides applied to every run (e.g. a Task 5 variant),
+  held_out ({field: [values]}): a run is held out (config field held_out) if any of its grid values is listed.
+A grid key "f1,f2" zips fields: its values are lists [v1, v2] (e.g. env_id,data_dir); the run name uses f1 only.
 Runs are results_dir/<sweep stem>/<field=value_..._seed=k>; a run with a `done` file is skipped.
 """
 import argparse
@@ -32,17 +34,23 @@ from wmx.train import RUNNERS
 
 def expand(sweep_path: Path) -> list[tuple[Path, dict]]:
     sw = yaml.safe_load(sweep_path.read_text())
-    if not {"base", "results_dir", "n_seeds", "grid"} <= set(sw) <= {"base", "results_dir", "n_seeds", "grid", "held_out"}:
-        raise ValueError(f"sweep keys must be base, results_dir, n_seeds, grid[, held_out]; got {sorted(sw)}")
+    if not {"base", "results_dir", "n_seeds", "grid"} <= set(sw) <= {"base", "results_dir", "n_seeds", "grid", "set",
+                                                                     "held_out"}:
+        raise ValueError(f"sweep keys must be base, results_dir, n_seeds, grid[, set, held_out]; got {sorted(sw)}")
     base, exp = yaml.safe_load(Path(sw["base"]).read_text()), sweep_path.stem
     runs = []
     for seed in range(sw["n_seeds"]):
         for values in itertools.product(*sw["grid"].values()):
-            point = dict(zip(sw["grid"], values))
+            point, name = {}, []
+            for k, v in zip(sw["grid"], values):
+                fields = k.split(",")
+                point |= dict(zip(fields, v)) if len(fields) > 1 else {k: v}
+                name.append(f"{fields[0]}={v[0] if len(fields) > 1 else v}".replace("/", "-"))
             if "held_out" in sw:
                 point["held_out"] = any(point.get(k) in v for k, v in sw["held_out"].items())
-            name = "_".join(f"{k}={v}" for k, v in point.items() if k != "held_out") + f"_seed={seed}"
-            runs.append((Path(sw["results_dir"]) / exp / name, {**base, **point, "exp": exp, "seed": seed}))
+            name = "_".join(name) + f"_seed={seed}"
+            runs.append((Path(sw["results_dir"]) / exp / name,
+                         {**base, **sw.get("set", {}), **point, "exp": exp, "seed": seed}))
     return runs
 
 

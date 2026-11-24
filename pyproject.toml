@@ -13,6 +13,8 @@ dependencies = [
   "gymnasium[mujoco]>=1.0",
   "pyyaml>=6.0",
   "crafter>=1.8",
+  "minari[hf]>=0.5",        # VERIFY: extra needed to download the Farama datasets
+  "gym-pusht>=0.1",
   "wandb",
   "pandas",
   "pyarrow",

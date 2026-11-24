@@ -9,6 +9,7 @@ import numpy as np
 from wmx.data.replay import KEYS, write_dataset
 
 src, out = Path(sys.argv[1]), Path(sys.argv[2])
+KEYMAP = {"obs": "image"}  # wmx key -> DreamerV3 key
 # VERIFY: embodied saves chunks as {time}-{uuid}-{succ}-{length}.npz, where succ is the uuid of the next chunk of
 # the same worker stream. Keys: image (T,64,64,3) uint8, action (T,) int or (T,17) one-hot, reward, is_first,
 # is_terminal. Check one file with np.load(...).files before converting.
@@ -27,7 +28,7 @@ for u in heads:
         f, u = chunks[u]
         with np.load(f) as c:
             for k in KEYS:
-                v = c[k]
+                v = c[KEYMAP.get(k, k)]
                 stream[k].append(v.argmax(-1) if k == "action" and v.ndim == 2 else v)
     stream = {k: np.concatenate(v) for k, v in stream.items()}
     start = int(np.argmax(stream["is_first"]))  # drop a partial episode at the stream start (evicted chunks)
@@ -35,7 +36,7 @@ for u in heads:
         parts[k].append(stream[k][start:])
 
 data = {k: np.concatenate(v) for k, v in parts.items()}
-data["image"], data["action"] = data["image"].astype(np.uint8), data["action"].astype(np.int64)
+data["obs"], data["action"] = data["obs"].astype(np.uint8), data["action"].astype(np.int64)
 data["reward"], data["is_first"] = data["reward"].astype(np.float32), data["is_first"].astype(bool)
 data["is_terminal"] = data["is_terminal"].astype(bool)
 write_dataset(out, **data)

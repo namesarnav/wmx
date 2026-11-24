@@ -7,6 +7,7 @@ N_ACTIONS = 17
 class CrafterEnv:
     """Thin wrapper: reset() -> obs (64, 64, 3) uint8; step(a) -> (obs, reward, terminated, done).
     `steps` counts real environment steps (CONTEXT.md §6)."""
+    act_dim = N_ACTIONS
 
     def __init__(self, seed: int, length: int):
         import crafter  # VERIFY: crafter.Env(area, view, size, reward, length, seed) signature (crafter 1.8)
@@ -18,6 +19,6 @@ class CrafterEnv:
 
     def step(self, action: int) -> tuple[np.ndarray, float, bool, bool]:
         # VERIFY: old gym API (obs, reward, done, info); info["discount"] == 0 iff the player died.
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, info = self.env.step(int(action))
         self.steps += 1
         return obs, float(reward), info["discount"] == 0, bool(done)

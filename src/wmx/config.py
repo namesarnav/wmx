@@ -105,8 +105,184 @@ class CrafterConfig:
             raise ValueError(f"bad config: {failed}")
 
 
-Config = FrozenLakeConfig | CrafterConfig
-CONFIGS = {"frozenlake": FrozenLakeConfig, "crafter": CrafterConfig}
+def _check(checks: dict[str, bool]) -> None:
+    failed = [k for k, ok in checks.items() if not ok]
+    if failed:
+        raise ValueError(f"bad config: {failed}")
+
+
+@dataclass(frozen=True)
+class EnvFields:
+    """The real environment (envs/vector.make_env). env_id 'crafter' selects Crafter (other env fields unused)."""
+    env_id: str                   # gymnasium id, e.g. HalfCheetah-v5, CartPole-v1, gym_pusht/PushT-v0, or crafter
+    env_kwargs: dict              # passed to gym.make, e.g. {terminate_when_unhealthy: false}
+    episode_length: int           # time limit; also caps imagined episodes
+    sticky: float                 # sticky-action probability (Task 5)
+    sparse_reward: bool           # reward 1 only at the time limit (Task 5, CartPole)
+    friction: float | None        # Push-T friction (Task 5), null = env default
+
+    def env_checks(self) -> dict[str, bool]:
+        return {"0 <= sticky < 1": 0 <= self.sticky < 1, "episode_length > 0": self.episode_length > 0}
+
+
+ARCHS = ("ensemble", "rssm", "tdmpc2")
+
+
+@dataclass(frozen=True)
+class VectorConfig(EnvFields):
+    """Task 3 (MuJoCo) and Task 5 (ablations): vector-observation world models, imagination AC or CEM/MPPI."""
+    task: str                     # "vector"
+    exp: str
+    seed: int
+    held_out: bool
+    device: str
+    data_dir: str
+    model_cache_dir: str
+    N: int                        # offline transitions for training
+    holdout: int                  # transitions from other episodes for the held-out one-step error
+    arch: str                     # ensemble | rssm | tdmpc2
+    params: int                   # target parameter count; the width is the smallest reaching it (equal-params match)
+    layers: int                   # ensemble MLP depth
+    members: int                  # ensemble size
+    stoch: int                    # rssm
+    classes: int                  # rssm
+    latent_unimix: float          # rssm
+    kl_free: float                # rssm
+    kl_dyn: float                 # rssm
+    kl_rep: float                 # rssm
+    latent: int                   # tdmpc2 latent dim (multiple of 8)
+    num_q: int                    # tdmpc2 Q-ensemble size
+    wm_steps: int
+    wm_lr: float
+    batch: int
+    seq_len: int                  # >= 2 (ensemble), >= 3 (tdmpc2)
+    grad_clip: float
+    pi0_eps: float                # pi0 smoothing: min std (continuous) or uniform mix (discrete) (open decision)
+    max_std: float                # Gaussian actor max std
+    bc_steps: int
+    bc_lr: float
+    optimizer: str                # ac | plan (CEM if plan_temperature == 0, else MPPI)
+    mopo_lambda: float            # MOPO penalty r - lambda u(s, a); ensemble only, 0 = off
+    ac_hidden: int
+    H: int                        # imagination / planning horizon
+    gamma: float                  # open decision
+    lam: float
+    entropy: float                # open decision
+    actor_lr: float
+    critic_lr: float
+    slow_decay: float
+    critic_warmup: int
+    ac_steps: int
+    every: int
+    plan_iters: list[int]         # planner iterations, one row each (0 = pi0)
+    plan_pop: int
+    plan_elites: int
+    plan_temperature: float
+    eval_episodes: int
+    imag_starts: int
+    delta_quantiles: list[float]
+
+    def __post_init__(self) -> None:
+        _check(self.env_checks() | {
+            "task must be 'vector'": self.task == "vector",
+            f"arch in {ARCHS}": self.arch in ARCHS,
+            "optimizer in ac/plan": self.optimizer in ("ac", "plan"),
+            "mopo_lambda >= 0 and only for ensemble": self.mopo_lambda == 0 or (self.mopo_lambda > 0 and
+                                                                                 self.arch == "ensemble"),
+            "device in auto/cpu/mps/cuda": self.device in ("auto", "cpu", "mps", "cuda"),
+            "0 < pi0_eps < max_std": 0 < self.pi0_eps < self.max_std,
+            "seq_len >= 3": self.seq_len >= 3,
+            "0 < gamma <= 1, 0 <= lam <= 1, 0 <= slow_decay < 1": 0 < self.gamma <= 1 and 0 <= self.lam <= 1
+            and 0 <= self.slow_decay < 1,
+            "0 <= critic_warmup <= ac_steps": 0 <= self.critic_warmup <= self.ac_steps,
+            "0 < plan_elites <= plan_pop, plan_iters >= 0": 0 < self.plan_elites <= self.plan_pop
+            and all(i >= 0 for i in self.plan_iters) and self.plan_temperature >= 0,
+            "positive sizes/steps": min(self.N, self.holdout, self.params, self.layers, self.members, self.stoch,
+                                        self.classes, self.latent, self.num_q, self.wm_steps, self.batch, self.bc_steps,
+                                        self.ac_hidden, self.H, self.ac_steps, self.every, self.eval_episodes,
+                                        self.imag_starts) > 0,
+            "delta_quantiles in (0, 1]": len(self.delta_quantiles) > 0 and all(0 < q <= 1 for q in self.delta_quantiles),
+        })
+
+
+@dataclass(frozen=True)
+class SACConfig(EnvFields):
+    """True-simulator RL ceiling for continuous actions (Haarnoja et al. 2018)."""
+    task: str                     # "sac"
+    exp: str
+    seed: int
+    device: str
+    steps: int                    # env steps
+    start_steps: int              # uniform-random actions before learning
+    buffer: int
+    batch: int
+    lr: float
+    hidden: int
+    gamma: float
+    tau: float                    # target EMA rate
+    eval_every: int
+    eval_episodes: int
+
+    def __post_init__(self) -> None:
+        _check(self.env_checks() | {"task must be 'sac'": self.task == "sac", "0 < tau <= 1": 0 < self.tau <= 1,
+                                    "start_steps < steps": 0 <= self.start_steps < self.steps})
+
+
+@dataclass(frozen=True)
+class PPOConfig(EnvFields):
+    """True-simulator RL ceiling for discrete actions (Schulman et al. 2017)."""
+    task: str                     # "ppo"
+    exp: str
+    seed: int
+    device: str
+    steps: int                    # env steps
+    rollout: int                  # env steps per update
+    epochs: int
+    minibatch: int
+    lr: float
+    hidden: int
+    gamma: float
+    lam: float                    # GAE
+    clip: float
+    entropy: float
+    eval_every: int
+    eval_episodes: int
+
+    def __post_init__(self) -> None:
+        _check(self.env_checks() | {"task must be 'ppo'": self.task == "ppo",
+                                    "minibatch <= rollout": 0 < self.minibatch <= self.rollout})
+
+
+@dataclass(frozen=True)
+class IQLConfig(EnvFields):
+    """Model-free offline baseline on the same data (Kostrikov et al. 2022)."""
+    task: str                     # "iql"
+    exp: str
+    seed: int
+    device: str
+    data_dir: str
+    N: int
+    steps: int
+    batch: int
+    lr: float
+    hidden: int
+    depth: int                    # CNN depth for image obs (Crafter)
+    gamma: float
+    tau: float                    # Q-target EMA rate
+    expectile: float
+    beta: float                   # AWR inverse temperature
+    pi_eps: float                 # actor smoothing (min std / uniform mix)
+    eval_every: int
+    eval_episodes: int
+
+    def __post_init__(self) -> None:
+        _check(self.env_checks() | {"task must be 'iql'": self.task == "iql",
+                                    "0.5 <= expectile < 1": 0.5 <= self.expectile < 1})
+
+
+Config = FrozenLakeConfig | CrafterConfig | VectorConfig | SACConfig | PPOConfig | IQLConfig
+CONFIGS = {"frozenlake": FrozenLakeConfig, "crafter": CrafterConfig, "vector": VectorConfig, "sac": SACConfig,
+           "ppo": PPOConfig, "iql": IQLConfig}
 
 
 def make_config(d: dict) -> Config:

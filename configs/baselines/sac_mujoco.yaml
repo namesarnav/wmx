@@ -1,0 +1,6 @@
+# True-simulator ceiling for every MuJoCo env (Task 3 reference line).
+base: configs/baselines/sac.yaml
+results_dir: results/baselines
+n_seeds: 3
+grid:
+  env_id: [HalfCheetah-v5, Hopper-v5, Walker2d-v5]
