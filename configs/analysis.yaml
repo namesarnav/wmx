@@ -1,0 +1,11 @@
+# Analysis decisions (CONTEXT.md §3.5) read by scripts/analyze.py. All are open decisions.
+x_axis: d_real            # TODO(Arnav): decide  (d_real | d_imag; run analyze twice for both)
+d_star: fit               # TODO(Arnav): decide  (fit: argmax of the fitted form | empirical: smoothed argmax)
+fit_mode: pooled          # TODO(Arnav): decide  (pooled: one fit on all seeds' points | per_seed: mean of per-seed fits)
+normalize: false          # TODO(Arnav): decide  (improvement / (ceiling - pi0); needs a ceiling_return column)
+smooth_window: 5          # moving-average width (checkpoints) for the empirical d*
+delta_quantile: 0.95      # TODO(Arnav): decide  (must be one of the logged delta_quantiles)
+delta_checkpoint: first   # TODO(Arnav): decide  (first: pi0's states | peak: states at d*) for the Q3 prediction
+eps: [0.01, 0.05, 0.1]    # TODO(Arnav): decide  (safe-horizon tolerance; onset = first d with gap - gap_0 > eps)
+disagreement_kappa: 0.5   # TODO(Arnav): decide  (onset = first d with disagreement > (1 + kappa) x its d = 0 value)
+n_boot: 1000              # bootstrap resamples over seeds
