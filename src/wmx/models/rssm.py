@@ -19,17 +19,17 @@ N_BINS = 255
 
 def symlog(x: torch.Tensor) -> torch.Tensor:
 
-        return torch.sign(x) * torch.log1p(x.abs())
+    return torch.sign(x) * torch.log1p(x.abs())
 
 
 def symexp(x: torch.Tensor) -> torch.Tensor:
 
-        return torch.sign(x) * torch.expm1(x.abs())
+    return torch.sign(x) * torch.expm1(x.abs())
 
 
 def make_bins() -> torch.Tensor:
 
-        return torch.linspace(-20, 20, N_BINS)
+    return torch.linspace(-20, 20, N_BINS)
 
 
 def twohot(y: torch.Tensor, bins: torch.Tensor) -> torch.Tensor:
@@ -40,13 +40,13 @@ def twohot(y: torch.Tensor, bins: torch.Tensor) -> torch.Tensor:
     out = torch.zeros(*x.shape, len(bins), device=x.device, dtype=x.dtype)
     out.scatter_(-1, (hi - 1)[..., None], (1 - w_hi)[..., None])
 
-        return out.scatter_add(-1, hi[..., None], w_hi[..., None])
+    return out.scatter_add(-1, hi[..., None], w_hi[..., None])
 
 
 def twohot_mean(logits: torch.Tensor, bins: torch.Tensor) -> torch.Tensor:
     """(..., K) logits -> (...,) prediction symexp(E[bin])."""
 
-        return symexp((logits.softmax(-1) * bins).sum(-1))
+    return symexp((logits.softmax(-1) * bins).sum(-1))
 
 
 def mlp(inp: int, hidden: int, out: int, layers: int) -> nn.Sequential:
@@ -54,7 +54,7 @@ def mlp(inp: int, hidden: int, out: int, layers: int) -> nn.Sequential:
     for i in range(layers):
         mods += [nn.Linear(inp if i == 0 else hidden, hidden), nn.LayerNorm(hidden), nn.SiLU()]
 
-        return nn.Sequential(*mods, nn.Linear(hidden, out))
+    return nn.Sequential(*mods, nn.Linear(hidden, out))
 
 
 class Encoder(nn.Module):
