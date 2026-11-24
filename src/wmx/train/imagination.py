@@ -5,7 +5,6 @@ optimizers (imagination actor-critic, CEM/MPPI planning). train/crafter.py and t
 `cfg` is a CrafterConfig or VectorConfig; only the fields shared by both are read here.
 """
 import copy
-import fcntl
 import hashlib
 import os
 from collections.abc import Callable
@@ -19,7 +18,7 @@ from torch.distributions import Distribution, kl_divergence
 from wmx.data.replay import SequenceSampler
 from wmx.metrics import d_from_kl
 from wmx.policies.actor_critic import Actor, ImaginationAC
-from wmx.utils import checksum
+from wmx.utils import checksum, file_lock
 
 Policy = Callable[[torch.Tensor], Distribution]
 
@@ -57,11 +56,9 @@ def load_or_train(cfg, fields: tuple[str, ...], model, pi0: Actor, sampler: Sequ
     Returns both frozen (requires_grad False, eval mode)."""
     key = hashlib.sha1(repr([getattr(cfg, k) for k in fields]).encode()).hexdigest()[:10]
     path = Path(cfg.model_cache_dir) / f"N={cfg.N}_seed={cfg.seed}_{key}.pt"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path.with_suffix(".lock"), "w") as lock:
-        # One run trains the model; concurrent runs with the same key wait here, then load it. The OS releases the
-        # lock if the process dies. Prefer `sweep.py --group` so runs sharing a model never wait on each other.
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with file_lock(path):
+        # One run trains the model; concurrent runs with the same key wait here, then load it.
+        # Prefer `sweep.py --group` so runs sharing a model never wait on each other.
         if path.exists():
             state = torch.load(path, map_location=device)
             model.load_state_dict(state["model"])

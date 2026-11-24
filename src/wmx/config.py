@@ -280,9 +280,65 @@ class IQLConfig(EnvFields):
                                     "0.5 <= expectile < 1": 0.5 <= self.expectile < 1})
 
 
-Config = FrozenLakeConfig | CrafterConfig | VectorConfig | SACConfig | PPOConfig | IQLConfig
+@dataclass(frozen=True)
+class SokobanConfig:
+    """Task 4: Sokoban with a fine-tuned Qwen text world model; best-of-K or GRPO over a board-MLP policy."""
+    task: str                     # "sokoban"
+    exp: str
+    seed: int
+    device: str
+    size: int                     # board side incl. walls
+    n_boxes: int
+    reverse_steps: int            # level generator difficulty
+    episode_length: int
+    N: int                        # offline transitions
+    data_eps: float               # random-action prob of the (optimal) data policy
+    model_name: str               # Hugging Face id of the base LM
+    model_cache_dir: str
+    wm_steps: int
+    wm_lr: float
+    wm_batch: int
+    temperature: float            # WM sampling temperature (1.0 = the model's own distribution)
+    gen_batch: int                # generation chunk size
+    pi0_eps: float                # pi0 smoothing (open decision)
+    hidden: int
+    bc_steps: int
+    bc_lr: float
+    optimizer: str                # bok | grpo
+    K_values: list[int]           # bok: one row per K
+    starts: int                   # evaluation start levels (fixed per run)
+    H: int                        # grpo: imagined steps per rollout from dataset boards
+    group: int                    # grpo: G rollouts per start board
+    batch_starts: int             # grpo: start boards per update
+    updates: int
+    lr: float
+    clip: float
+    kl_coef: float                # KL(pi || pi0) penalty; 0 lets d grow freely (CONTEXT.md Task 4)
+    ppo_epochs: int
+    every: int
+    delta_pairs: int              # (board, action) pairs per checkpoint for delta
+    delta_quantiles: list[float]
+
+    def __post_init__(self) -> None:
+        _check({
+            "task must be 'sokoban'": self.task == "sokoban",
+            "optimizer in bok/grpo": self.optimizer in ("bok", "grpo"),
+            "0 < pi0_eps < 1, 0 <= data_eps <= 1": 0 < self.pi0_eps < 1 and 0 <= self.data_eps <= 1,
+            "kl_coef >= 0, 0 < clip < 1": self.kl_coef >= 0 and 0 < self.clip < 1,
+            "K_values >= 1": len(self.K_values) > 0 and min(self.K_values) >= 1,
+            "group >= 2": self.group >= 2,
+            "size >= 4": self.size >= 4,
+            "positive sizes/steps": min(self.n_boxes, self.episode_length, self.N, self.wm_steps, self.wm_batch,
+                                        self.gen_batch, self.hidden, self.bc_steps, self.starts, self.H,
+                                        self.batch_starts, self.updates, self.ppo_epochs, self.every,
+                                        self.delta_pairs) > 0,
+            "delta_quantiles in (0, 1]": len(self.delta_quantiles) > 0 and all(0 < q <= 1 for q in self.delta_quantiles),
+        })
+
+
+Config = FrozenLakeConfig | CrafterConfig | VectorConfig | SACConfig | PPOConfig | IQLConfig | SokobanConfig
 CONFIGS = {"frozenlake": FrozenLakeConfig, "crafter": CrafterConfig, "vector": VectorConfig, "sac": SACConfig,
-           "ppo": PPOConfig, "iql": IQLConfig}
+           "ppo": PPOConfig, "iql": IQLConfig, "sokoban": SokobanConfig}
 
 
 def make_config(d: dict) -> Config:

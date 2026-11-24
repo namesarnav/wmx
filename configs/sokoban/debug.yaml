@@ -1,0 +1,8 @@
+# Smoke test with a tiny LM (any small causal LM id works; set model_name to one in your HF cache).
+base: configs/sokoban/base.yaml
+results_dir: results/runs
+n_seeds: 1
+set: {N: 500, wm_steps: 5, wm_batch: 4, gen_batch: 16, bc_steps: 20, starts: 4, K_values: [1, 2], H: 3, group: 2,
+      batch_starts: 2, updates: 2, every: 1, delta_pairs: 8, episode_length: 8, model_cache_dir: results/models/debug}
+grid:
+  optimizer: [bok, grpo]

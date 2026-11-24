@@ -1,0 +1,39 @@
+task: sokoban
+exp: base                 # set by the sweep
+seed: 0                   # set by the sweep
+device: auto
+# --- env / data ---
+size: 6                   # incl. walls: 4x4 interior
+n_boxes: 2
+reverse_steps: 30
+episode_length: 30
+N: 50000
+data_eps: 0.2             # optimal policy (BFS) + 20% random actions, as FrozenLake
+# --- text world model ---
+model_name: Qwen/Qwen2.5-0.5B   # VERIFY: model id; any small causal LM works
+model_cache_dir: results/models/sokoban
+wm_steps: 3000            # VERIFY: held-out next-board accuracy plateaus
+wm_lr: 2.0e-5
+wm_batch: 32
+temperature: 1.0          # sample from the model's own distribution (delta is defined against it)
+gen_batch: 256
+# --- pi0 ---
+pi0_eps: 0.01             # TODO(Arnav): decide
+hidden: 256
+bc_steps: 5000
+bc_lr: 1.0e-3
+# --- optimizer ---
+optimizer: grpo           # bok | grpo
+K_values: [1, 2, 4, 8, 16, 32, 64, 128]
+starts: 64
+H: 15
+group: 8
+batch_starts: 32
+updates: 2000             # VERIFY: far enough past the true-return peak
+lr: 1.0e-4
+clip: 0.2
+kl_coef: 0.0              # TODO(Arnav): decide (0 lets d grow; sweep in grpo.yaml)
+ppo_epochs: 2
+every: 50
+delta_pairs: 512
+delta_quantiles: [0.5, 0.9, 0.95, 0.99]  # TODO(Arnav): decide which is primary

@@ -1,0 +1,7 @@
+# Task 4, Q1: best-of-K over imagined trajectories of pi0, K = 1..128 (rows). Tests d(a - b d).
+base: configs/sokoban/base.yaml
+results_dir: results/runs
+n_seeds: 5
+set: {optimizer: bok}
+grid:
+  N: [10000, 50000]
