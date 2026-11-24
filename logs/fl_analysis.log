@@ -1,0 +1,22 @@
+             rl_r2    bon_r2
+cell                        
+N=100000  0.988712  0.998208
+N=1600    0.762475  0.708955
+N=17000   0.876788  0.856722
+N=2900    0.722047  0.662358
+N=31000   0.946476  0.964419
+N=500     0.777386  0.689186
+N=5300    0.735135  0.633197
+N=55000   0.984598  0.994882
+N=900     0.832969  0.795916
+N=9500    0.723145  0.529497
+results/analysis/frozenlake/n_sweep/q1_forms.png
+d_star log d_star = -1.491 +0.278 log N
+peak log peak = -9.579 +0.816 log N
+gap log gap = 2.214 -0.520 log N
+alpha log alpha = -8.868 +0.697 log N
+beta log beta = -8.088 +0.538 log N
+results/analysis/frozenlake/n_sweep/q2_scaling.png
+skip results/runs/frozenlake/planning (no results)
+skip results/runs/frozenlake/fill_ablation (no results)
+skip results/runs/frozenlake/safe_horizon (no results)

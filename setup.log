@@ -1,0 +1,260 @@
+Installing dependencies from lock file
+
+Package operations: 117 installs, 1 update, 0 removals
+
+  - Installing accelerate (1.16.0)
+  - Installing annotated-doc (0.0.7)
+  - Installing annotated-types (0.8.0)
+  - Installing anyio (4.16.0)
+  - Installing certifi (2026.10.23)
+  - Installing cffi (2.1.1)
+  - Installing charset-normalizer (3.5.2)
+  - Installing click (8.5.1)
+  - Installing cloudpickle (3.1.3)
+  - Installing contourpy (1.3.3)
+  - Installing crafter (1.8.3)
+  - Installing cuda-bindings (13.5.0)
+  - Installing cuda-pathfinder (1.9.1)
+  - Installing cuda-toolkit (13.2.2)
+  - Installing cwevals (0.0.1b1)
+  - Installing cycler (0.12.1)
+  - Installing distro (1.9.0)
+  - Installing farama-notifications (0.0.6)
+  - Installing filelock (4.2.12)
+  - Installing fonttools (4.68.0)
+  - Installing fsspec (2026.9.0)
+  - Installing glfw (2.11.0)
+  - Installing googleapis-common-protos (1.76.0)
+  - Installing gym-pusht (0.1.8)
+  - Installing gymnasium (1.4.0)
+  - Installing h11 (0.16.0)
+  - Installing hf-xet (1.8.0)
+  - Installing httpcore (1.0.9)
+  - Installing httpcore2 (2.16.2)
+  - Installing httpx (0.28.1)
+  - Installing httpx2 (2.16.2)
+  - Installing huggingface-hub (2.4.0)
+  - Installing idna (3.20)
+  - Installing imageio (2.38.2)
+  - Installing iniconfig (2.3.1)
+  - Installing jinja2 (3.1.6)
+  - Installing markdown-it-py (4.3.0)
+  - Installing kiwisolver (1.5.1)
+  - Installing matplotlib (3.11.2)
+  - Installing mdurl (0.1.2)
+  - Installing minari (0.5.4)
+  - Installing markupsafe (3.0.4)
+  - Installing mpmath (1.3.0)
+  - Installing mujoco-studio (4.0.1)
+  - Installing mujoco-studio-wasm (4.0.1)
+  - Installing networkx (3.6)
+  - Installing numpy (2.4.6)
+  - Installing nvidia-cublas (13.4.1.3)
+  - Installing mujoco-core (4.0.1)
+  - Installing nvidia-cuda-cupti (13.2.86)
+  - Installing nvidia-cuda-cccl (13.3.5.0.6)
+  - Installing nvidia-cuda-runtime (13.2.86)
+  - Installing nvidia-cudnn-cu13 (9.26.0.51)
+  - Installing nvidia-cufft (12.2.0.57)
+  - Installing nvidia-cusolver (12.2.0.11)
+  - Installing nvidia-cuda-nvrtc (13.2.86)
+  - Installing nvidia-cusparselt-cu13 (0.8.1)
+  - Installing mujoco (4.0.1)
+  - Installing nvidia-nccl-cu13 (2.30.7)
+  - Installing nvidia-cufile (1.17.1.22)
+  - Installing nvidia-cusparse (12.7.10.12)
+  - Installing opencv-python (4.14.0.94)
+  - Installing nvidia-nvjitlink (13.5.37)
+  - Installing nvidia-nvshmem-cu13 (3.7.2)
+  - Installing nvidia-nvtx (13.2.86)
+  - Installing opensimplex (0.4.5.1)
+  - Installing opentelemetry-exporter-http-transport (0.66b2)
+  - Installing opentelemetry-api (1.45.2)
+  - Installing opentelemetry-exporter-otlp-common (0.66b2)
+  - Installing opentelemetry-exporter-otlp-proto-common (1.45.2)
+  - Installing opentelemetry-exporter-otlp-proto-http (1.45.2)
+  - Installing opentelemetry-proto (1.45.2)
+  - Installing opentelemetry-sdk (1.45.2)
+  - Installing opentelemetry-semantic-conventions (0.66b2)
+  - Installing packaging (26.3)
+  - Installing pandas (3.1.1)
+  - Installing pillow (13.0.0)
+  - Installing platformdirs (4.14.7)
+  - Installing pluggy (1.7.0)
+  - Installing protobuf (7.36.2)
+  - Installing psutil (7.2.2)
+  - Installing pyarrow (26.0.1)
+  - Installing pycparser (3.12)
+  - Installing pydantic (2.14.4)
+  - Installing pydantic-core (2.50.5)
+  - Installing pygame (2.6.1)
+  - Installing pygments (2.21.0)
+  - Installing pymunk (6.11.1)
+  - Installing pyopengl (3.1.10)
+  - Installing pyparsing (3.3.3)
+  - Installing pytest (9.2.0)
+  - Installing python-dateutil (4.0.0)
+  - Installing pyyaml (6.0.3)
+  - Installing regex (2026.11.23)
+  - Installing requests (2.34.2)
+  - Installing rich (15.0.0)
+  - Installing ruamel-yaml (0.19.1)
+  - Installing safetensors (0.8.0)
+  - Installing scipy (1.17.1)
+  - Updating setuptools (79.0.1 -> 84.2.1)
+  - Installing shapely (2.2.0)
+  - Installing shellingham (1.5.4)
+  - Installing sniffio (1.3.1)
+  - Installing sympy (1.14.0)
+  - Installing tokenizers (0.23.3)
+  - Installing torch (2.15.0)
+  - Installing tqdm (4.70.1)
+  - Installing transformers (5.24.0)
+  - Installing triton (3.9.0)
+  - Installing truststore (0.10.5)
+  - Installing typer (0.29.2)
+  - Installing typing-extensions (4.16.0)
+  - Installing typing-inspection (0.4.5)
+  - Installing tzdata (2026.6)
+  - Installing urllib3 (2.8.0)
+  - Installing wandb (0.31.0)
+  - Installing websockets (17.4)
+  - Installing xxhash (4.1.0)
+/tmp/tmpv8s7owc_/.venv/lib/python3.11/site-packages/setuptools/dist.py:765: BuildBackendWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: MIT License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+/tmp/tmpv8s7owc_/.venv/lib/python3.11/site-packages/setuptools/dist.py:765: BuildBackendWarning: License classifiers are deprecated.
+!!
+
+        ********************************************************************************
+        Please consider removing the following classifiers in favor of a SPDX license expression:
+
+        License :: OSI Approved :: MIT License
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  self._finalize_license_expression()
+Installing /scratch/av4445/wmx/env/venv/lib/python3.11/site-packages/mujoco/__init__.py over existing file
+
+Installing the current project: wmx (0.1.0)
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting tests/test_crafter.py ____________________
+env/venv/lib/python3.11/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+env/venv/lib/python3.11/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+env/venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+tests/test_crafter.py:8: in <module>
+    from wmx.config import load_config, make_config
+src/wmx/config.py:7: in <module>
+    from wmx.models.rssm import SIZES
+E     File "/scratch/av4445/wmx/src/wmx/models/rssm.py", line 43
+E       return out.scatter_add(-1, hi[..., None], w_hi[..., None])
+E   IndentationError: unexpected indent
+____________________ ERROR collecting tests/test_sokoban.py ____________________
+env/venv/lib/python3.11/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+env/venv/lib/python3.11/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+env/venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+tests/test_sokoban.py:7: in <module>
+    from wmx.config import load_config, make_config
+src/wmx/config.py:7: in <module>
+    from wmx.models.rssm import SIZES
+E     File "/scratch/av4445/wmx/src/wmx/models/rssm.py", line 43
+E       return out.scatter_add(-1, hi[..., None], w_hi[..., None])
+E   IndentationError: unexpected indent
+____________________ ERROR collecting tests/test_tabular.py ____________________
+env/venv/lib/python3.11/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+env/venv/lib/python3.11/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+env/venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+tests/test_tabular.py:7: in <module>
+    from wmx.config import make_config
+src/wmx/config.py:7: in <module>
+    from wmx.models.rssm import SIZES
+E     File "/scratch/av4445/wmx/src/wmx/models/rssm.py", line 43
+E       return out.scatter_add(-1, hi[..., None], w_hi[..., None])
+E   IndentationError: unexpected indent
+____________________ ERROR collecting tests/test_vector.py _____________________
+env/venv/lib/python3.11/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+env/venv/lib/python3.11/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+env/venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+tests/test_vector.py:10: in <module>
+    from wmx.config import load_config, make_config
+src/wmx/config.py:7: in <module>
+    from wmx.models.rssm import SIZES
+E     File "/scratch/av4445/wmx/src/wmx/models/rssm.py", line 43
+E       return out.scatter_add(-1, hi[..., None], w_hi[..., None])
+E   IndentationError: unexpected indent
+=========================== short test summary info ============================
+ERROR tests/test_crafter.py
+ERROR tests/test_sokoban.py
+ERROR tests/test_tabular.py
+ERROR tests/test_vector.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+4 errors in 14.86s

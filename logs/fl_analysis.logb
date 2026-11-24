@@ -1,0 +1,30 @@
+             rl_r2    bon_r2
+cell                        
+N=100000  0.986857  0.997799
+N=1600    0.767423  0.676945
+N=17000   0.886954  0.862205
+N=2900    0.719540  0.639847
+N=31000   0.950140  0.962192
+N=500     0.767823  0.671630
+N=5300    0.702164  0.578963
+N=55000   0.981720  0.989748
+N=900     0.817428  0.761861
+N=9500    0.734052  0.570562
+results/analysis/frozenlake/n_sweep/q1_forms.png
+/scratch/av4445/wmx/src/wmx/analysis/fits.py:28: RuntimeWarning: overflow encountered in exp
+  d = float(np.exp(alpha / beta - 1))
+d_star log d_star = 0.092 +0.123 log N
+peak log peak = -5.630 +0.433 log N
+gap log gap = 2.591 -0.551 log N
+alpha log alpha = -5.428 +0.365 log N
+beta log beta = -5.723 +0.310 log N
+results/analysis/frozenlake/n_sweep/q2_scaling.png
+                                        rl_r2    bon_r2
+cell                                                   
+optimizer=bok_steps=1048576_N=10000  0.965512  0.914732
+optimizer=bok_steps=1048576_N=2000   0.917685  0.866591
+optimizer=bok_steps=1048576_N=500    0.935043  0.906698
+optimizer=bok_steps=1048576_N=50000  0.989479  0.976908
+results/analysis/frozenlake/planning/q1_forms.png
+/scratch/av4445/wmx/src/wmx/analysis/fits.py:28: RuntimeWarning: overflow encountered in exp
+  d = float(np.exp(alpha / beta - 1))
