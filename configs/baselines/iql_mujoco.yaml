@@ -1,6 +1,6 @@
 # IQL on the same offline data and budgets as arch.yaml (Task 3 reference line).
 base: configs/baselines/iql.yaml
-results_dir: results/baselines
+results_dir: results
 n_seeds: 3
 grid:
   env_id,data_dir: [[HalfCheetah-v5, data/halfcheetah-medium], [Hopper-v5, data/hopper-medium],

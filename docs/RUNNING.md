@@ -1,93 +1,104 @@
 # Running
 
-All times are **estimates** (not measured) for a Mac CPU.
+Run everything in this order. Each step is one script in `scripts/run/`. Every sweep is resumable: re-run the same command after an interruption. Times are **estimates, not measurements**.
+
+Shared options (environment variables) for every `scripts/run/*.sh`:
+| Variable | Effect |
+|---|---|
+| `WORKERS=K` | runs in parallel on this machine. Default: #CPUs for CPU sweeps, #GPUs for GPU sweeps |
+| `SLURM=1` | submit a SLURM array instead. First fill in the VERIFY account/partition lines in `scripts/slurm/*.sbatch` |
+| `EXTRA="..."` | extra `scripts/sweep.py` args, e.g. `EXTRA="--max-concurrent 20"` |
+
+Each script prints its experiments when run without arguments. Progress: `poetry run python scripts/sweep.py SWEEP.yaml --list`.
 
 ## 1. Setup
 ```bash
-poetry lock        # pyproject changed (hydra/omegaconf -> pyyaml)
-poetry install
+sudo apt install -y python3.11 python3.11-venv git tmux pipx && pipx install poetry   # Linux; Mac: brew
+git clone https://github.com/namesarnav/wmx.git && cd wmx
+scripts/run/setup.sh            # poetry env, lock, install, tests
 ```
+Run long sweeps inside `tmux`.
 
 ## 2. Tests
+`poetry run pytest -q` (also run by setup.sh). Takes about 1–2 min on CPU. **Every test must pass before any sweep.**
+
+## 3. FrozenLake (CPU)
 ```bash
-poetry run pytest -q
+scripts/run/frozenlake.sh debug          # 2 runs, seconds
+scripts/run/frozenlake.sh tune           # one run + results/runs/frozenlake/tune/curve_d_real.png
+scripts/run/frozenlake.sh all            # n_sweep (300), fill_ablation (480), safe_horizon (750), planning (120)
 ```
-All must pass before any sweep. ~30 s (estimate).
+- **Tune first.** Adjust `lr`/`steps` in `configs/frozenlake/base.yaml` until the tune curve looks like CONTEXT.md §8: imagined return rises past the optimum line, and true return rises, peaks, then falls.
+- **Expected peak:** d* ≈ 0.21 at N = 2000.
+- **Time:** ~1 min per run. On 64 cores, all 1,650 runs take ~30–60 min.
+- **Before moving on:** d* and the peak should grow with N (prior: 0.21 at 2K, 0.28 at 10K).
 
-## 3. FrozenLake (Phase 1)
-Results land in `results/runs/<sweep>/<field=value_..._seed=k>/` with `config.yaml`, `git.txt`, `metrics.csv`, `done`.
-
+## 4. Crafter (GPU)
 ```bash
-# a. Smoke test, then tune lr on one run and look at the curve
-poetry run python scripts/sweep.py configs/frozenlake/debug.yaml
-poetry run python scripts/run.py configs/frozenlake/base.yaml results/runs/base/try1
-poetry run python scripts/plot_run.py results/runs/base/try1            # -> curve_d_real.png
+scripts/run/crafter.sh dreamer           # online DreamerV3 run -> data/crafter  (~1 day, ~12 GB)
+scripts/run/crafter.sh debug             # minutes
+scripts/run/crafter.sh pilot             # 2 runs, ~6–24 h each
+scripts/run/crafter.sh gate              # must print PILOT PASS
+SLURM=1 EXTRA="--max-concurrent 20" scripts/run/crafter.sh grid   # 240 runs as 80 tasks (--group 3)
+scripts/run/crafter.sh iql
 ```
-Tune `lr`/`steps` in `base.yaml` until, at N=2000, the curve looks like CONTEXT.md §8:
-imagined return rises monotonically (eventually above the optimum line), true return rises, peaks, then falls.
-The prior result is d* ≈ 0.21 at N=2000. If true return never falls, check the fill rule and coverage. If it falls from d=0,
-the optimizer, π₀ or the evaluation is broken.
+- **Data:** the converter must report ≥ 1,000,000 steps.
+- **Pilot:** watch the `wm` loss lines. Tune `wm_steps`/`ac_steps` (VERIFY) if the model has not converged or true return has not peaked.
+- **Gate rule (pre-set, `scripts/pilot_gate.py`):** in both seeds, all three must hold:
+  - imagined return rises with d (Spearman ≥ `MIN_SPEARMAN`, and last > first + 2 SE)
+  - true return peaks mid-run
+  - true return then falls ≥ 20% and by > 2 SE
 
+  **Do not run the grid unless it passes.**
+- **Grid:** with `--group 3`, each task trains one world model and runs H = 5, 15, 50. Raise `#SBATCH --time` in `array_gpu.sbatch` to cover three runs. Size l at N = 1M is the slowest (~1–2 days).
+- **Before moving on:** d* and peak grow with N and size.
+
+## 5. MuJoCo (GPU)
 ```bash
-# b. Sweeps (resumable: re-run the same command after interruption)
-# add --workers K to run K runs at once (e.g. --workers 8 on a Mac: ~5 h -> <1 h for the N sweep, estimate)
-poetry run python scripts/sweep.py configs/frozenlake/n_sweep.yaml          # 300 runs
-poetry run python scripts/sweep.py configs/frozenlake/fill_ablation.yaml    # 480 runs
-poetry run python scripts/sweep.py configs/frozenlake/safe_horizon.yaml     # 750 runs
-# or on SLURM (fill in the VERIFY lines in scripts/slurm/array.sbatch first):
-poetry run python scripts/sweep.py configs/frozenlake/n_sweep.yaml --slurm
-poetry run python scripts/sweep.py configs/frozenlake/n_sweep.yaml --list   # progress
+scripts/run/mujoco.sh data               # Minari medium datasets -> data/*-medium (~1M steps each)
+scripts/run/mujoco.sh debug              # minutes
+scripts/run/mujoco.sh sac                # ceilings: 9 runs, ~6–12 h each
+scripts/run/mujoco.sh iql                # 18 runs, ~2–4 h each
+scripts/run/mujoco.sh arch               # 108 runs, ~4–12 h each
+scripts/run/mujoco.sh cem                # 36 runs; reuses arch's cached ensembles
+scripts/run/mujoco.sh mopo               # 45 runs
 ```
-Per run: ~1 min (5000 exact-PG steps + 2000 real rollouts; estimate). The N sweep is ~5 h sequential, minutes on SLURM.
+**Before moving on:**
+- `holdout_error` decreases with N and params.
+- AC curves rise then fall.
+- CEM rows (iterations 0…16) show the same rise and fall.
 
-**Before moving on:** across N, d* and peak true return should increase with N (prior: d* 0.21 at N=2000, 0.28 at N=10000).
-
-## 4. Crafter (Phase 2)
-All times are **estimates** for one H100.
-
-**Setup:** re-lock after the Python 3.11 switch and the `crafter` dependency:
+## 6. Sokoban (GPU)
 ```bash
-pyenv install 3.11 && poetry env use 3.11   # or any Python 3.11
-poetry lock && poetry install && poetry run pytest -q
+scripts/run/sokoban.sh debug             # downloads Qwen2.5-0.5B once
+scripts/run/sokoban.sh bok               # 10 runs
+scripts/run/sokoban.sh grpo              # 30 runs
 ```
+- **Fine-tune:** ~1 h per (N, seed), cached and shared by bok and grpo. Each run takes ~2–8 h.
+- **Check first:** `invalid_frac` must be small (< 0.05) at K = 1 / step 0. Otherwise raise `wm_steps`.
 
-**a. Online DreamerV3 run → offline data** (official JAX code, in its own venv, not Poetry):
+## 7. Mechanism ablations (GPU; run after §5, which provides the Hopper SAC policy)
 ```bash
-git clone https://github.com/danijar/dreamerv3 ~/dreamerv3 && cd ~/dreamerv3
-python3.11 -m venv .venv && source .venv/bin/activate
-pip install -U -r requirements.txt            # VERIFY: plus the jax[cuda12] line from their README
-pip install crafter
-python dreamerv3/main.py --logdir ~/logdir/crafter --configs crafter --run.steps 1.1e6
-# VERIFY: replay chunks are written to ~/logdir/crafter/replay (configs.yaml, replay section) and none are evicted
-deactivate && cd -
-poetry run python scripts/convert_dreamer_replay.py ~/logdir/crafter/replay data/crafter
+scripts/run/ablations.sh policies        # SAC per variant (+ Push-T behavior policy), PPO CartPole
+scripts/run/ablations.sh data            # one dataset per variant, collected with the unmodified env's policy
+scripts/run/ablations.sh sticky; scripts/run/ablations.sh termination
+scripts/run/ablations.sh cartpole; scripts/run/ablations.sh pusht
 ```
-~1 day. The converter prints steps/episodes; you need ≥ 1,000,000 steps (the largest budget). ~12 GB on disk.
+Collection settings are `N_COLLECT` (default 260K) and `EPS` (default 0.2, **OD**).
 
-**b. Smoke test** (minutes on a Mac):
+## 8. Analysis
 ```bash
-poetry run python scripts/sweep.py configs/crafter/debug.yaml
+scripts/run/analysis.sh all              # or: frozenlake | crafter | mujoco | sokoban | ablations
 ```
+- **Before running:** set the open decisions in `configs/analysis.yaml`.
+- **Output:** CSVs and PNGs in `results/analysis/<task>/<sweep>/`.
+- **One figure per research question:**
 
-**c. Pilot** (2 seeds, size s, N = 100K, H = 15):
-```bash
-poetry run python scripts/sweep.py configs/crafter/pilot.yaml --slurm --sbatch scripts/slurm/array_gpu.sbatch
-poetry run python scripts/plot_run.py results/runs/pilot/N=100000_size=s_H=15_seed=0 d_imag
-poetry run python scripts/pilot_gate.py results/runs/pilot
-```
-~6–24 h per run (world model ~2–4 h, then 100K AC steps with 51 checkpoints of real and imagined episodes).
-Watch the `wm` loss lines in the SLURM log; tune `wm_steps` / `ac_steps` (VERIFY) if the world model has not converged
-or true return has not yet peaked. **Gate:** `pilot_gate.py` must print `PILOT PASS`. Do not start the grid otherwise.
+| Question | Figure |
+|---|---|
+| Q1 | `q1_forms.png` |
+| Q2 | `q2_scaling.png`, plus `q2_extrapolation.csv` |
+| Q3 | `q3_safe_horizon.png` |
+| Q4 | `q4_mechanisms.png` |
 
-**d. Main grid** (240 runs; held-out cells N = 1M and size l have `held_out = True`):
-```bash
-poetry run python scripts/sweep.py configs/crafter/grid.yaml --slurm --sbatch scripts/slurm/array_gpu.sbatch \
-    --group 3 --max-concurrent 20     # 80 tasks, one per (N, size, seed) cell running H = 5, 15, 50 in order
-# one multi-GPU node instead: --group 3 --workers 8   (GPUs assigned round-robin to the 8 workers)
-poetry run python scripts/sweep.py configs/crafter/grid.yaml --list
-```
-World models/π₀ are cached in `results/models/crafter/` and shared by the H = 5/15/50 runs of a cell; `--group 3`
-keeps a cell's runs in one task so the world model is trained once (a file lock guards against concurrent training).
-With `--group 3`, raise `#SBATCH --time` in `array_gpu.sbatch` to cover three runs. Size l at N = 1M is the slowest cell (~1–2 days).
-
-**Before moving on:** as with FrozenLake, d* and peak true return should increase with N (and with size).
+Single runs: `poetry run python scripts/plot_run.py RUN_DIR d_real`.

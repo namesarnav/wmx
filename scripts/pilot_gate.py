@@ -3,7 +3,7 @@ PASS iff in EVERY seed:
   (a) imagined return rises with d: Spearman(d_imag, imagined_return) >= MIN_SPEARMAN and last > first + 2 SE
   (b) true return peaks mid-run: argmax checkpoint is not within EDGE of the first/last checkpoint
   (c) then falls >= 20%: final <= 0.8 * peak and peak - final > 2 * sqrt(se_peak^2 + se_final^2)
-Usage: python scripts/pilot_gate.py results/runs/pilot      (exit code 0 = PASS, 1 = FAIL)
+Usage: python scripts/pilot_gate.py results/runs/crafter/pilot      (exit code 0 = PASS, 1 = FAIL)
 """
 import sys
 from pathlib import Path

@@ -1,7 +1,7 @@
 # IQL on the Crafter offline data, at the grid's data budgets (Task 2 reference line). Ceiling = the online DreamerV3
 # run's score (docs/DECISIONS.md).
 base: configs/baselines/iql.yaml
-results_dir: results/baselines
+results_dir: results
 n_seeds: 3
 set: {env_id: crafter, episode_length: 10000, data_dir: data/crafter, steps: 500000, eval_episodes: 16,
       expectile: 0.9, beta: 10.0}   # TODO(Arnav): decide (IQL has no published Crafter settings)
