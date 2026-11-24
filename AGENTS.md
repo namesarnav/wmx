@@ -13,7 +13,7 @@ Background is in `README.md` and `docs/`; the exact run order is in `docs/RUNNIN
 
 1. **Do not modify source code or configs** (`src/`, `configs/`, `scripts/`, `tests/`). The committed values are the
    author's choices, including those marked `TODO(Arnav)`. Only change what this file explicitly allows:
-   - environment variables (`WORKERS`, `SLURM`, `EXTRA`, `N_COLLECT`, `EPS`, `SIF`, `OVERLAY`)
+   - environment variables (`WORKERS`, `SLURM`, `EXTRA`, `N_COLLECT`, `EPS`, `SIF`)
    - the SLURM `#SBATCH` header lines
    - `device`, only if the hardware forces it
 
@@ -59,8 +59,9 @@ scripts/run/setup.sh        # poetry env (3.11) + lock + install + pytest
 could not be imported; report them.
 
 **On a server without root, or with a file-count quota, use Apptainer** (docs/RUNNING.md §1). This applies to NYU Courant compute servers.
-- Run `export SIF=$PWD/env/wmx.sif OVERLAY=$PWD/env/wmx.img` before `scripts/run/setup.sh`.
-- Keep both exported for every later command. All `scripts/run/*.sh` then run inside the container.
+- Clone the repo onto a disk without the file-count limit (Courant: `/scratch/$USER`).
+- Run `export SIF=$PWD/env/wmx.sif` before `scripts/run/setup.sh`.
+- Keep it exported for every later command. All `scripts/run/*.sh` then run inside the container.
 - These are environment variables, so section 1 allows them.
 
 If you have a GPU, check that torch sees it:
