@@ -13,7 +13,9 @@ if [[ -n ${SIF:-} ]]; then
   ctr bash -c 'set -e
     [[ -d env/poetry ]] || { python -m venv env/poetry && env/poetry/bin/pip install poetry; }
     [[ -d env/venv ]] || python -m venv env/venv
-    VIRTUAL_ENV=$PWD/env/venv POETRY_VIRTUALENVS_CREATE=false env/poetry/bin/poetry install'
+    export VIRTUAL_ENV=$PWD/env/venv POETRY_VIRTUALENVS_CREATE=false
+    env/poetry/bin/poetry check --lock || env/poetry/bin/poetry lock   # stale lock: re-resolve
+    env/poetry/bin/poetry install'
 else
   poetry env use python3.11
   poetry lock
