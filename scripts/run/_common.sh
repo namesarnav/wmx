@@ -3,11 +3,17 @@
 #   WORKERS=K   runs at once on this machine (default: #CPUs for CPU sweeps, #GPUs for GPU sweeps)
 #   SLURM=1     submit a SLURM array instead of running locally (GPU sweeps use scripts/slurm/array_gpu.sbatch)
 #   EXTRA="..." extra scripts/sweep.py arguments, e.g. EXTRA="--max-concurrent 20"
+#   SIF=... OVERLAY=...  run inside Apptainer: the whole Python env is these 2 files (servers with file-count limits)
 set -euo pipefail
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "$(dirname "$SELF")/../.."
+# keep caches in data/ and write no bytecode, so few files land in $HOME
+export HF_HOME=${HF_HOME:-$PWD/data/hf} MINARI_DATASETS_PATH=${MINARI_DATASETS_PATH:-$PWD/data/minari} \
+  XDG_CACHE_HOME=${XDG_CACHE_HOME:-$PWD/data/.cache} MPLCONFIGDIR=${MPLCONFIGDIR:-$PWD/data/.cache/mpl} \
+  PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1
 
-py() { poetry run python "$@"; }
+ctr() { apptainer exec --nv --bind "$PWD" --overlay "$1" "$SIF" "${@:2}"; }  # ctr OVERLAY[:ro] CMD...
+py() { if [[ -n ${SIF:-} ]]; then ctr "$OVERLAY:ro" /opt/wmx/venv/bin/python "$@"; else poetry run python "$@"; fi; }
 
 workers() {  # workers cpu|gpu
   if [[ -n ${WORKERS:-} ]]; then echo "$WORKERS"

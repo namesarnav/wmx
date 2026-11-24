@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Crafter (Task 2), GPU. Usage: scripts/run/crafter.sh EXPERIMENT
-#   dreamer  online DreamerV3 run (official JAX code, own venv in ~/dreamerv3) -> data/crafter
+#   dreamer  online DreamerV3 run (official JAX code, own venv) -> data/crafter. With SIF set, the venv lives in a
+#            second overlay, $DREAMER_OVERLAY (default: dreamer.img next to $OVERLAY)
 #   debug    minutes-long smoke test (needs data/crafter)
 #   pilot    Task 2a: 2 seeds, size s, N=100K, H=15; then run `gate`
 #   gate     pilot pass/fail rule (exit 0 = PASS). Do not run `grid` unless it passes.
@@ -10,11 +11,16 @@
 source "$(dirname "$0")/_common.sh"
 case ${1:-} in
   dreamer)
-    [[ -d ~/dreamerv3 ]] || git clone https://github.com/danijar/dreamerv3 ~/dreamerv3
-    ( cd ~/dreamerv3 && python3.11 -m venv .venv && source .venv/bin/activate \
-      && pip install -U -r requirements.txt crafter \
-      && python dreamerv3/main.py --logdir ~/logdir/crafter --configs crafter --run.steps 1.1e6 )  # VERIFY: flags
-    py scripts/convert_dreamer_replay.py ~/logdir/crafter/replay data/crafter ;;
+    [[ -d data/dreamerv3 ]] || git clone --depth 1 https://github.com/danijar/dreamerv3 data/dreamerv3
+    run='cd data/dreamerv3 && { [[ -d $V ]] || python3.11 -m venv $V; } && source $V/bin/activate
+      pip install -U -r requirements.txt crafter
+      python dreamerv3/main.py --logdir ../dreamer_logdir --configs crafter --run.steps 1.1e6'  # VERIFY: flags
+    if [[ -n ${SIF:-} ]]; then
+      D=${DREAMER_OVERLAY:-$(dirname "$OVERLAY")/dreamer.img}
+      [[ -f $D ]] || apptainer overlay create --sparse --size 20000 --create-dir /opt/dreamer "$D"
+      V=/opt/dreamer/venv ctr "$D" bash -c "set -e; $run"
+    else V=.venv bash -c "set -e; $run"; fi
+    py scripts/convert_dreamer_replay.py data/dreamer_logdir/replay data/crafter ;;
   debug) sweep configs/crafter/debug.yaml gpu ;;
   pilot) sweep configs/crafter/pilot.yaml gpu ;;
   gate)  py scripts/pilot_gate.py results/runs/crafter/pilot ;;

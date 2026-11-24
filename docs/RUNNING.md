@@ -19,6 +19,20 @@ scripts/run/setup.sh            # poetry env, lock, install, tests
 ```
 Run long sweeps inside `tmux`.
 
+### Apptainer (servers without root or with a file-count quota, e.g. Courant compute servers)
+The whole Python env becomes 2 files: a container (`wmx.sif`) and an overlay image (`wmx.img`). There is no Python or poetry needed on the host.
+```bash
+git clone https://github.com/namesarnav/wmx.git && cd wmx       # on a disk with room; check: quota -s; df -h .
+export SIF=$PWD/env/wmx.sif OVERLAY=$PWD/env/wmx.img             # add to ~/.bashrc (with the absolute path)
+scripts/run/setup.sh                                             # pull, install into the overlay, tests
+WORKERS=60 scripts/run/frozenlake.sh all                         # every script now runs inside the container
+```
+- Runs mount the overlay read-only, so any number can share it. Only `setup.sh` mounts it read-write: never run it while runs are going.
+- To add a dependency, re-run `setup.sh`.
+- Caches (Hugging Face, Minari, matplotlib) go to `data/`, and no `.pyc` files are written.
+- `crafter.sh dreamer` makes a second overlay, `env/dreamer.img`, for DreamerV3's own env.
+- There is no SLURM: start runs inside `tmux` with `WORKERS=K`. `--nv` gives GPU access and only warns on CPU-only servers.
+
 ## 2. Tests
 `poetry run pytest -q` (also run by setup.sh). Takes about 1–2 min on CPU. **Every test must pass before any sweep.**
 
