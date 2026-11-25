@@ -28,3 +28,13 @@ optimizer=bok_steps=1048576_N=50000  0.989479  0.976908
 results/analysis/frozenlake/planning/q1_forms.png
 /scratch/av4445/wmx/src/wmx/analysis/fits.py:28: RuntimeWarning: overflow encountered in exp
   d = float(np.exp(alpha / beta - 1))
+/scratch/av4445/wmx/env/venv/lib/python3.11/site-packages/matplotlib/transforms.py:2496: RuntimeWarning: invalid value encountered in dot
+  return Affine2D(np.dot(self._b.get_affine().get_matrix(),
+/scratch/av4445/wmx/env/venv/lib/python3.11/site-packages/matplotlib/axes/_axes.py:4238: RuntimeWarning: invalid value encountered in scalar add
+  low, high = dep + np.vstack([-(1 - lolims), 1 - uplims]) * err
+/scratch/av4445/wmx/env/venv/lib/python3.11/site-packages/matplotlib/transforms.py:2496: RuntimeWarning: invalid value encountered in dot
+  return Affine2D(np.dot(self._b.get_affine().get_matrix(),
+results/analysis/frozenlake/fill_ablation/q4_mechanisms.png
+/scratch/av4445/wmx/src/wmx/analysis/fits.py:28: RuntimeWarning: overflow encountered in exp
+  d = float(np.exp(alpha / beta - 1))
+results/analysis/frozenlake/safe_horizon/q3_safe_horizon.png
