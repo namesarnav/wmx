@@ -9,3 +9,4 @@ delta_checkpoint: first   # TODO(Arnav): decide  (first: pi0's states | peak: st
 eps: [0.01, 0.05, 0.1]    # TODO(Arnav): decide  (safe-horizon tolerance; onset = first d with gap - gap_0 > eps)
 disagreement_kappa: 0.5   # TODO(Arnav): decide  (onset = first d with disagreement > (1 + kappa) x its d = 0 value)
 n_boot: 1000              # bootstrap resamples over seeds
+share_y: true             # same y-limits across the panels of a figure (q1); false: each panel its own

@@ -13,7 +13,7 @@ import yaml
 from wmx.analysis.fits import bootstrap_ci, fit_form, first_crossing, smoothed_peak
 
 DECISION_KEYS = ("x_axis", "d_star", "fit_mode", "normalize", "smooth_window", "delta_quantile", "delta_checkpoint",
-                 "eps", "disagreement_kappa", "n_boot")
+                 "eps", "disagreement_kappa", "n_boot", "share_y")
 
 
 def load_decisions(path: str | Path) -> dict:

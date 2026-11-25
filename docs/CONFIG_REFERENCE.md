@@ -114,6 +114,7 @@ All fields are open decisions except `smooth_window` and `n_boot`. See docs/DECI
 | fit_mode | pooled / per_seed | pooled **OD** |
 | normalize | divide improvement by (ceiling − π₀) | false **OD** |
 | smooth_window | empirical-d* moving average | 5 |
+| share_y | same y-limits across a figure's panels (q1) | true |
 | delta_quantile, delta_checkpoint | δ for Q3 | 0.95 **OD**, first **OD** |
 | eps | safe-horizon tolerances | 0.01, 0.05, 0.1 **OD** |
 | disagreement_kappa | disagreement onset threshold | 0.5 **OD** |
