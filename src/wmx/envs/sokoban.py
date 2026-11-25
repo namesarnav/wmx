@@ -1,4 +1,4 @@
-"""Sokoban (Task 4): a small pure-Python engine whose state is the text board, so the real env, the text world model
+"""Sokoban: a small pure-Python engine whose state is the text board, so the real env, the text world model
 and the policy share one representation. Own implementation (docs/DECISIONS.md): gym-sokoban targets old gym, and we
 need to load arbitrary boards (true next state of an imagined board, for delta).
 

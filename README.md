@@ -60,6 +60,27 @@ scripts/run/setup.sh            # poetry env, install, tests
 
 ## 2. How running works
 
+**The shortest path is one command per task.** It runs everything from setup to figures:
+```bash
+cd /scratch/$USER/wmx                                  # after the clone in section 1
+tmux new -d -s frozenlake scripts/pipeline.sh frozenlake
+tmux attach -t frozenlake                              # watch; Ctrl-b d to leave it running
+```
+| Task | Server | What `scripts/pipeline.sh TASK` runs |
+|---|---|---|
+| `frozenlake` | CPU (crunchy1) | debug → all four sweeps → analysis |
+| `sokoban` | GPU with bf16 (cuda5) | debug → grpo → bok → analysis |
+| `mujoco` | GPU (cuda2) | data → debug → sac → iql → arch → cem → mopo → analysis |
+| `ablations` | GPU, after `mujoco` (needs its `sac`) | policies → data → 4 ablation sweeps → analysis |
+| `crafter` | GPU, big | dreamer → debug → pilot → gate (stops on FAIL) → grid → iql → analysis |
+
+- **Setup:** runs once per server and is skipped afterwards.
+- **Re-running after a crash** picks up where it stopped.
+- **Log:** `logs/TASK.log`.
+- **At the end,** it writes `~/wmx_results_<server>.tgz`, a single-file backup of `results/` without the cached models.
+
+The rest of this section explains the per-experiment scripts that `pipeline.sh` calls. Use those directly to run one sweep at a time.
+
 Every experiment is **one command**:
 ```bash
 scripts/run/<task>.sh <experiment>
