@@ -19,27 +19,28 @@ N_BINS = 255
 
 def symlog(x: torch.Tensor) -> torch.Tensor:
 
-    return torch.sign(x) * torch.log1p(x.abs())
+        return torch.sign(x) * torch.log1p(x.abs())
 
 
 def symexp(x: torch.Tensor) -> torch.Tensor:
 
-    return torch.sign(x) * torch.expm1(x.abs())
+        return torch.sign(x) * torch.expm1(x.abs())
 
 
 def make_bins() -> torch.Tensor:
 
-    return torch.linspace(-20, 20, N_BINS)
+        return torch.linspace(-20, 20, N_BINS)
 
 
 def twohot(y: torch.Tensor, bins: torch.Tensor) -> torch.Tensor:
     """(...,) -> (..., K): weights on the two bins around symlog(y), linear interpolation."""
+    
     x = symlog(y).clamp(bins[0], bins[-1]).contiguous()
     hi = torch.searchsorted(bins, x).clamp(1, len(bins) - 1)
     w_hi = (x - bins[hi - 1]) / (bins[hi] - bins[hi - 1])
     out = torch.zeros(*x.shape, len(bins), device=x.device, dtype=x.dtype)
     out.scatter_(-1, (hi - 1)[..., None], (1 - w_hi)[..., None])
-
+    
     return out.scatter_add(-1, hi[..., None], w_hi[..., None])
 
 
@@ -115,24 +116,34 @@ class WorldModel(nn.Module):
     def __init__(self, dims: tuple[int, int, int], obs_shape: tuple[int, ...], act_dim: int, stoch: int, classes: int,
                  unimix: float, kl_free: float, kl_dyn: float, kl_rep: float):
         """dims = (deter, hidden, cnn depth) e.g. SIZES[size]; depth is unused for vector observations."""
+
         super().__init__()
+
+
         deter, hidden, depth = dims
+
         self.deter, self.stoch, self.classes, self.act_dim, self.unimix = deter, stoch, classes, act_dim, unimix
         self.hidden, self.kl = hidden, (kl_free, kl_dyn, kl_rep)
         self.feat_dim = self.state_dim = deter + stoch * classes
+
         if len(obs_shape) == 3:
             self.encoder, self.decoder = Encoder(depth), Decoder(self.feat_dim, depth)
         else:
             self.encoder, self.decoder = VecEncoder(obs_shape[0], hidden), mlp(self.feat_dim, hidden, obs_shape[0], 2)
+        
         self.img_in = nn.Sequential(nn.Linear(stoch * classes + act_dim, hidden), nn.LayerNorm(hidden), nn.SiLU())
         self.gru = nn.GRUCell(hidden, deter)
         self.prior_net = mlp(deter, hidden, stoch * classes, 1)
         self.post_net = mlp(deter + self.encoder.out_dim, hidden, stoch * classes, 1)
         self.reward_head = mlp(self.feat_dim, hidden, N_BINS, 2)
         self.cont_head = mlp(self.feat_dim, hidden, 1, 2)
+        
         nn.init.zeros_(self.reward_head[-1].weight)
+        
         nn.init.zeros_(self.reward_head[-1].bias)
+
         self.register_buffer("bins", make_bins())
+
 
     def dist(self, logits: torch.Tensor) -> torch.Tensor:
         """(..., S*K) logits -> (..., S, K) probs mixed with `unimix` uniform."""

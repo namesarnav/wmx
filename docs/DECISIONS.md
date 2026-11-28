@@ -154,3 +154,30 @@ Check each of these first when you run.
 - `configs/mujoco/base.yaml` — env versions (v5), `wm_steps`, `ac_steps`.
 - `src/wmx/envs/vector.py` — gym-pusht pymunk `space`; `configs/ablations/pusht.yaml` — env id and `obs_type`.
 - `src/wmx/models/text_wm.py` — Qwen pad token; `configs/sokoban/base.yaml` — model id, `wm_steps`, `updates`.
+
+## Presentation experiments (E1–E5, docs/RUNNING.md §9)
+Open decisions, each a `TODO(Arnav)` in `configs/presentation/`: `slip`, `step_cost`, `gamma`, `eps`, `behavior_route`,
+`a0` (and E3's two values), `data_episode_len`, `d_discount`, `H_eps`, `bok_len`; the seed counts and Ns of E1/E4/E5;
+E4's γ grid and `nonvacuous_below`; E3's `d_ref` and `peak_drop_frac`. `lr` is a VERIFY (check with `--dry-run`).
+
+Implementation choices (agreed before building):
+- **π₀** is fixed: (1−ε)·π_route + ε·uniform, with π_route the value-iteration policy on the true maze restricted to
+  route A (cells of the other route count as terminal, value 0 while planning). Same π₀ for every N and seed.
+- **Model:** reward and termination are known functions of the cell entered (G: reward 1, terminal; H: terminal).
+  Only T̂ is learned (Dirichlet, `a0`), so R̂(s,a) = Σ T̂(s'|s,a) r(s') − step_cost and terminal rows stay absorbing.
+  The B bound assumes a shared R(s,a); here R̂ differs only through T̂, and episode return is ≤ 1.
+- **d:** RL d uses γ-discounted visits (`d_discount: true`) under the true dynamics (`d_true`), and also under the
+  model (`d_model`). Best-of-K d = √(log K − (K−1)/K) (an upper bound when scores tie).
+- **Slip:** intended move w.p. 1−p, each perpendicular move w.p. p/2; p = 2/3 reproduces FrozenLake. The FrozenLake
+  map has no 100-step limit here; returns are discounted instead.
+- **ε\*_obs:** max over checkpoint pairs i < j with J_model[j] > J_model[i] of J_true[i] − J_true[j].
+- **Peak rule:** the true return falls after its peak by ≥ `peak_drop_frac`·(optimum − J_true(π₀)), while the final
+  model return is above its value at the peak.
+- **Routes (E2):** the greedy policy is followed from S without slip: B if it reaches G through a `b` cell, A if
+  through `a` cells only, otherwise "other". The route mass is the share of discounted true visits in `a` and `b` cells.
+- **E5:** 2^`K_log2_max` open-loop sequences of length `bok_len` are drawn once per seed, by rolling π₀ in the
+  learned model. Best-of-K is the first maximiser of the exact model return among the first K. `K_stable` is the
+  smallest K after which the selection never changes.
+- **B check:** a violation is logged (`bound_ok`) and printed as a WARNING, not raised. The unit test asserts it.
+- **Seed weighting:** E1 bins checkpoints by d, averages within a bin per seed, then across seeds (bootstrap CI over
+  seeds). E3–E5 average one value per seed.

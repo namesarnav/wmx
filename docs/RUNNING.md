@@ -116,3 +116,25 @@ scripts/run/analysis.sh all              # or: frozenlake | crafter | mujoco | s
 | Q4 | `q4_mechanisms.png` |
 
 Single runs: `poetry run python scripts/plot_run.py RUN_DIR d_real`.
+
+## 9. Presentation experiments (CPU, exact tabular; E1–E5)
+Five small experiments, each producing one figure in `results/presentation/`. Everything is exact (linear solves),
+except the dataset itself and E5's sampled candidate sequences. Code: `src/wmx/envs/maze.py`, `src/wmx/exact.py`,
+`scripts/presentation.py`. Configs: `configs/presentation/` (`base.yaml` plus one file per experiment).
+
+Run in this order:
+```bash
+poetry run pytest -q tests/test_presentation.py      # or inside the container, as setup.sh does
+scripts/run_presentation.sh --dry-run                # tiny settings, minutes: check results/presentation/dry/*.png
+tmux new -d -s pres scripts/run_presentation.sh      # full run; log in logs/presentation.log
+```
+In the dry run, check that E1's learned-model panel shows true return rising, then falling. If it stays flat, raise `lr`
+or `steps` in `base.yaml`; if it is noisy, lower `lr`.
+
+| Figure | Shows | Expected |
+|---|---|---|
+| `E1.png` | imagined and true return vs d, true model vs learned model | true model: the curves coincide and never fall; learned: they diverge |
+| `E2.png` | the greedy route along optimization; J of the fixed route policies π_A, π_B | the switch to route B coincides with the true-return fall; the model ranks π_B above π_A, the true env the reverse |
+| `E3.png` (+ `E3_summary.csv`) | peak, optimum − peak (log-log), gap at d_ref, fraction exploiting, d\*, ε\*_obs vs N | — |
+| `E4.png` (+ `E4_summary.csv`) | max \|J_true − J_model\| / B vs N per γ; fraction with a non-vacuous B | ratio ≤ 1 always (a printed WARNING means a bug) |
+| `E5.png` | best-of-K true and imagined return vs analytic d, median K_stable | imagined rises with K; true may peak, then fall |

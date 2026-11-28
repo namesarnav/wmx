@@ -1,0 +1,16 @@
+# E3 data sweep (C2): two-route maze + FrozenLake 8x8, N log-spaced 500 -> 100K, two Dirichlet strengths.
+n_seeds: 30
+grid:
+  case:
+    - {map: configs/presentation/maps/two_route.txt, behavior_route: a, slip: 0.2}
+    - {map: configs/presentation/maps/frozenlake8x8.txt, behavior_route: all, slip: 0.6666666666666666}
+  N: [500, 900, 1600, 2900, 5300, 9500, 17000, 31000, 55000, 100000]
+  a0: [0.1, 1.0]        # TODO(Arnav): decide
+plot:
+  d_ref: 1.0            # TODO(Arnav): decide  (gap is read at the checkpoint nearest this d)
+  peak_drop_frac: 0.1   # TODO(Arnav): decide  (peak rule: drop >= frac * (optimum - pi0 return), model still rising)
+  n_boot: 1000
+dry:
+  n_seeds: 2
+  grid: {N: [500, 5000]}
+  set: {steps: 60, every: 10}

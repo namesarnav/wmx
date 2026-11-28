@@ -1,0 +1,20 @@
+# Presentation experiments E1-E5 (docs/RUNNING.md §9): shared fields. Run config = base | experiment `set` | grid point
+# | seed. Maps: '#' wall, 'S' start, 'G' goal, 'H' hazard, 'a'/'b' route A/B cells; or random:ROWSxCOLS:SEED.
+map: configs/presentation/maps/two_route.txt
+slip: 0.2               # TODO(Arnav): decide  (P(perpendicular move); 0.6666666666666666 = FrozenLake is_slippery)
+step_cost: 0.0          # TODO(Arnav): decide  (must stay 0 for E4: the bound B assumes rewards in [0, 1])
+gamma: 0.95             # TODO(Arnav): decide  (discount, < 1 so every linear solve is well posed)
+eps: 0.1                # TODO(Arnav): decide  (pi0 = (1 - eps) pi_route + eps uniform; full support, no smoothing)
+behavior_route: a       # TODO(Arnav): decide  (pi_route = optimal policy restricted to route a | b | all: unrestricted)
+a0: 1.0                 # TODO(Arnav): decide  (Dirichlet prior: T_hat = (n(s,a,s') + a0/|S|) / (n(s,a) + a0))
+N: 2000                 # real transitions in the dataset
+data_episode_len: 100   # TODO(Arnav): decide  (data collection resets after this many steps; 100 = FrozenLake limit)
+true_model: false       # true: T_hat := T (control)
+d_discount: true        # TODO(Arnav): decide  (true: d from gamma-discounted visits | false: undiscounted, may diverge)
+lr: 20.0                # VERIFY: SGD step on the exact model gradient; check with --dry-run that true return peaks
+steps: 3000
+every: 30
+H_eps: [0.01, 0.05, 0.1]  # TODO(Arnav): decide  (eps values at which H(eps, delta) is logged)
+K_log2_max: 16          # E5: K = 2^0 .. 2^K_log2_max
+bok_len: 30             # TODO(Arnav): decide  (E5 open-loop sequence length)
+seed: 0                 # set per run

@@ -1,0 +1,12 @@
+# E4 theory check (C4): two-route maze, gamma x N; delta_max, H(eps, delta), B(h, delta), max |J_true - J_model|.
+n_seeds: 10             # TODO(Arnav): decide
+grid:
+  gamma: [0.8, 0.9, 0.95, 0.99]   # TODO(Arnav): decide
+  N: [1000, 10000, 100000]        # TODO(Arnav): decide
+plot:
+  nonvacuous_below: 1.0 # TODO(Arnav): decide  (guarantee counts as non-vacuous when B < this; 1 = max episode return)
+  n_boot: 1000
+dry:
+  n_seeds: 2
+  grid: {gamma: [0.9], N: [1000]}
+  set: {steps: 60, every: 10}

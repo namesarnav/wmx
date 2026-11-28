@@ -1,0 +1,12 @@
+# E1 controls (trust figure): exact PG from pi0 in the true model (T_hat = T) vs in the learned model.
+n_seeds: 10             # TODO(Arnav): decide
+set:
+  N: 1000               # TODO(Arnav): decide  (the "small N")
+grid:
+  true_model: [true, false]
+plot:
+  n_bins: 20            # d bins; each seed weighs equally within a bin
+  n_boot: 1000
+dry:
+  n_seeds: 2
+  set: {steps: 60, every: 10}

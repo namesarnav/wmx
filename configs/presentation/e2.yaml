@@ -1,0 +1,3 @@
+# E2 route switch: plots E1's learned-model runs (no runs of its own).
+plot:
+  show_seed: 0          # the run drawn with route shading

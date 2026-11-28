@@ -1,0 +1,9 @@
+# E5 best-of-K: open-loop sequences sampled from pi0 in the learned model, scored by exact expected model return.
+n_seeds: 30             # TODO(Arnav): decide
+set:
+  N: 1000               # TODO(Arnav): decide
+plot:
+  n_boot: 1000
+dry:
+  n_seeds: 2
+  set: {K_log2_max: 6}
